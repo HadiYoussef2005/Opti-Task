@@ -27,15 +27,15 @@ function SignIn() {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        username:username,
-                        password:password
+                        username: username,
+                        password: password
                     })
                 });
                 const data = await response.json();
                 if(response.ok){
                     if(data.message === "Login Successful") {
                         console.log(data.message);
-                        navigate('/');
+                        navigate('/dashboard', { state: { username: username } });
                     } else {
                         setError(true);
                         setErrorMessage(data.message);
@@ -79,6 +79,7 @@ function SignIn() {
                         setError(false);
                         setErrorMessage('');
                         console.log("User registered successfully");
+                        navigate('/dashboard', { state: { username: username } });
                     }
                 } else {
                     setError(true);
