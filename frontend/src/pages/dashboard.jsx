@@ -1,14 +1,17 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useContext, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { UserContext } from '../App';
 
 function Dashboard() {
+    const navigate = useNavigate();
+    const { user, loggedIn } = useContext(UserContext);
     const location = useLocation();
     const username = location.state ? location.state.username : '';
 
     return (
-        <div>
-            <h1 className="title">Welcome {username}</h1>
-        </div>
+        <>
+            {loggedIn ? <h1>Welcome {user}</h1> : <h1>Loading...</h1>}
+        </>
     );
 }
 
