@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { UserContext } from '../App';
 
 function SignIn({ handleLogOut }) {
-    const { user, loggedIn } = useContext(UserContext);
+    const { user, loggedIn, setLoggedIn, setUser } = useContext(UserContext);
     const navigate = useNavigate();
     const { state } = useLocation();
     const [username, setUsername] = useState('');
@@ -42,7 +42,9 @@ function SignIn({ handleLogOut }) {
             if (response.ok) {
               if (data.message === `Login Successful`) {
                 console.log(data.message);
-                navigate('/dashboard', { replace: true }); // Navigate to dashboard
+                setLoggedIn(true);
+                setUser(username);
+                navigate('/dashboard', { replace: true }); 
               } else {
                 setError(true);
                 setErrorMessage(data.message);
@@ -86,7 +88,9 @@ function SignIn({ handleLogOut }) {
                         setError(false);
                         setErrorMessage('');
                         console.log("User registered successfully");
-                        // navigate('/dashboard', { state: { username: username } });
+                        setLoggedIn(true);
+                        setUser(username);
+                        navigate('/dashboard', {replace: true });
                     }
                 } else {
                     setError(true);

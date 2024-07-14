@@ -53,8 +53,8 @@ const App = () => {
       });
       if (response.ok) {
         console.log(response);
-        setLoggedIn(false); // Update local state
-        setUser(''); // Clear user information
+        setLoggedIn(false); 
+        setUser(''); 
       } else {
         console.error("Logout failed with status:", response.status);
       }
@@ -64,7 +64,7 @@ const App = () => {
   };
 
   return (
-    <UserContext.Provider value={{ user, loggedIn }}>
+    <UserContext.Provider value={{ user, loggedIn, setLoggedIn, setUser }}>
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<Home />} />
