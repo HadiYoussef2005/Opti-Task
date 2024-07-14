@@ -60,7 +60,7 @@ function SignIn({ handleLogOut }) {
         }
       }
 
-    async function handleRegister(username, password, confirm) {
+      async function handleRegister(username, password, confirm) {
         if (password !== confirm) {
             setError(true);
             setErrorMessage(`Passwords must match`);
@@ -80,23 +80,37 @@ function SignIn({ handleLogOut }) {
                     })
                 });
                 const data = await response.json();
+                
                 if (response.ok) {
-                    if (data.message !== `User registered with username of ${username}`) {
-                        setError(true);
-                        setErrorMessage(data.message);
-                    } else {
-                        setError(false);
-                        setErrorMessage('');
-                        console.log("User registered successfully");
+                    setError(false);
+                    setErrorMessage('');
+                    console.log("User registered successfully");
+                    
+                    const loginResponse = await fetch('http://localhost:3000/login', {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        }),
+                        credentials: 'include'
+                    });
+                    
+                    if (loginResponse.ok) {
+                        const loginData = await loginResponse.json();
                         setLoggedIn(true);
                         setUser(username);
-                        navigate('/dashboard', {replace: true });
+                        navigate('/dashboard', { replace: true });
+                    } else {
+                        setError(true);
+                        setErrorMessage("Login after registration failed");
                     }
                 } else {
                     setError(true);
                     setErrorMessage(data.message || "Registration failed");
                 }
-                console.log(data);
             } catch (error) {
                 setError(true);
                 setErrorMessage(`An error occurred. Please try again.`);
@@ -104,6 +118,7 @@ function SignIn({ handleLogOut }) {
             }
         }
     }
+    
 
     return (
         <>

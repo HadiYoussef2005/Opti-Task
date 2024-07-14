@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const User = require('./schemas/User');
 const cors = require('cors');
-const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -40,14 +39,22 @@ app.use(session({
         ttl: 24 * 60 * 60 
     }),
     cookie: {
-        expires: 60 * 60 * 24 * 1000, 
+        expires: 60 * 60 * 24 * 1000,
         httpOnly: true,
-        secure: false, 
+        secure: false,
         sameSite: 'lax'
     }
 }));
 
 mongoose.connect('mongodb://localhost/todolist');
+
+function isAuthenticated(req, res, next) {
+    if (req.session.user) {
+        return next();
+    } else {
+        res.status(401).send('You must be logged in to perform this action');
+    }
+}
 
 app.get('/login', async (req, res) => {
     if (req.session.user) {
@@ -114,6 +121,32 @@ app.get('/logout', (req, res) => {
     });
 });
 
+app.delete('/deleteUser', isAuthenticated, async (req, res) => {
+    const { username } = req.body;
+    if (!username) {
+        return res.status(400).json({ message: "Username not provided" });
+    }
+
+    try {
+        console.log('Received request to delete user');
+        console.log('Username to delete:', username);
+
+        const trimmedUsername = username.trim();
+        const result = await User.deleteOne({ username: trimmedUsername });
+
+        console.log('Delete result:', result);
+
+        if (result.deletedCount === 0) {
+            console.error("User not found");
+            return res.status(404).send(`No user found with username: ${trimmedUsername}`);
+        } else if (result.deletedCount === 1) {
+            return res.status(200).json({ message: `Successfully deleted user with username: ${trimmedUsername}` });
+        }
+    } catch (err) {
+        console.error('Error deleting user:', err);
+        return res.status(500).send('Error deleting user');
+    }
+});
 
 
 app.listen(port, () => {
