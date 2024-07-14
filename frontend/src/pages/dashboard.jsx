@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UserContext } from '../App';
 
-function Dashboard() {
+function Dashboard({handleLogOut}) {
     const navigate = useNavigate();
     const { user, loggedIn, setUser, setLoggedIn } = useContext(UserContext);
     const location = useLocation();
@@ -29,8 +29,7 @@ function Dashboard() {
                 });
                 if(logOut.ok) {
                     console.log("User Deleted!")
-                    setLoggedIn(false)
-                    setUser('')
+                    handleLogOut()
                     navigate('/')
                 }
                 else{
@@ -42,14 +41,20 @@ function Dashboard() {
         }
     }
 
+    useEffect(() => {
+        if (!loggedIn) {
+            navigate('/');
+        }
+    }, [loggedIn, navigate]);
+
     return (
         <>
             {loggedIn ? <>
                 <h1>Welcome {user}</h1> 
                 <button className="btn btn-primary" onClick={handleDelete}>Delete Account</button>
+                <button className="btn btn-primary" onClick={handleLogOut}>Logout</button>
             </>
-            : 
-            <h1>Loading...</h1>}
+            : null}
         </>
     );
 }

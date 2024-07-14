@@ -69,7 +69,7 @@ const App = () => {
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/signin' element={<SignIn handleLogOut={handleLogOut} />} />
-          <Route path='/dashboard' element={<Dashboard />} />
+          <Route path='/dashboard' element={<Dashboard handleLogOut={handleLogOut}/>} />
         </Routes>
       </BrowserRouter>
     </UserContext.Provider>
