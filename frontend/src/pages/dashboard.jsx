@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UserContext } from '../App';
+import Navbar from '../components/Navbar' 
 
 function Dashboard({ handleLogOut }) {
     const [enterError, setEnterError] = useState(false)
@@ -56,56 +57,32 @@ function Dashboard({ handleLogOut }) {
     }, [loggedIn, navigate]);
 
     return (
-        <>
-            {loggedIn ? (
                 <>
-                {!modal? (
-                <>
-                    <h1>Welcome {user}</h1>
-                    <button className="btn btn-primary" onClick={handleModalToggle}>
-                        Delete Account
-                    </button>
-                    <button className="btn btn-primary" onClick={handleLogOut}>
-                        Logout
-                    </button>
-                </>
-                ): (
-                        <div className="card">
-                            <div className="card-content">
-                                <h1>Are you sure you want to delete your account?</h1>
-                                <h5>Please enter your username below and press "confirm" if you do</h5>
-                                <div className="form-group">
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        id="username"
-                                        placeholder="Username"
-                                        value={enteredUser}
-                                        onChange={(e) => setEnteredUser(e.target.value)}
-                                    />
+                    <Navbar originalPage={'/dashboard'} handleLogOut={handleLogOut} />
+                    <div className="flex-container">
+                        <div className="control-bar">
+                            <button className="control-items">
+                                Add Item
+                            </button>
+                        </div>
+                        <div className="todos">
+                            <div className="todo-column">
+                                <div className="priority">
+                                    High
                                 </div>
-                                <button className="btn btn-primary" onClick={()=>{
-                                    if(user == enteredUser){
-                                        handleDelete()
-                                    }
-                                    else{
-                                        setEnterError(true)
-                                    }
-                                }
-                                }>
-                                    Confirm
-                                </button>
-                                <button className="btn btn-secondary" onClick={handleModalToggle}>
-                                    Cancel
-                                </button>
-                                {enterError ? (<h4 className="error-message">You entered your username wrong</h4>):(null)}
+                            </div>
+                            <div className="todo-column">
+                                <div className="priority">
+                                    Mid                                        
+                                </div>
+                            </div>
+                            <div className="todo-column">
+                                <div className="priority">
+                                    Low                                        
+                                </div>
                             </div>
                         </div>
-                    )}
-                </>
-            ) : null}
-        </>
-    );
-}
+                    </div>
+                </>)}
 
 export default Dashboard;

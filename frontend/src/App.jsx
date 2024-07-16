@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/home.jsx';
 import SignIn from './pages/signin.jsx';
 import Dashboard from './pages/dashboard.jsx';
+import DeleteUser from './pages/deleteUser';
 
 const UserContext = createContext();
 
@@ -63,6 +64,39 @@ const App = () => {
     }
   };
 
+  async function handleDelete() {
+      try {
+          const deleteUser = await fetch("http://localhost:3000/deleteUser", {
+              method: "DELETE",
+              headers: {
+                  "Content-Type": 'application/json'
+              },
+              credentials: "include",
+              body: JSON.stringify({
+                  username: user
+              })
+          });
+          console.log(deleteUser)
+          if (deleteUser.ok) {
+              const logOut = await fetch("http://localhost:3000/logout", {
+                  method: "GET",
+                  headers: {
+                      "Content-Type": "application/json"
+                  }
+              });
+              if (logOut.ok) {
+                  console.log("User Deleted!")
+                  handleLogOut();
+                  navigate('/');
+              } else {
+                  console.error("There was a problem");
+              }
+          }
+      } catch (error) {
+          console.error(error);
+      }
+  }
+
   return (
     <UserContext.Provider value={{ user, loggedIn, setLoggedIn, setUser }}>
       <BrowserRouter>
@@ -70,6 +104,7 @@ const App = () => {
           <Route path='/' element={<Home />} />
           <Route path='/signin' element={<SignIn handleLogOut={handleLogOut} />} />
           <Route path='/dashboard' element={<Dashboard handleLogOut={handleLogOut}/>} />
+          <Route path='/deleteUser' element={<DeleteUser handleLogOut={handleLogOut} handleDelete={handleDelete} />} />
         </Routes>
       </BrowserRouter>
     </UserContext.Provider>

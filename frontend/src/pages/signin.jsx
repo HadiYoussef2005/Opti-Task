@@ -121,7 +121,7 @@ function SignIn({ handleLogOut }) {
     
 
     return (
-        <>
+        <div className = "signin">
             {!loggedIn ? (
                 <div className="card">
                     <div className="card-body">
@@ -201,7 +201,7 @@ function SignIn({ handleLogOut }) {
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 }
 
