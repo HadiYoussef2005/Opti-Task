@@ -158,31 +158,33 @@ function SignIn({ handleLogOut }) {
                                 />
                             </div>
                         )}
-                        <button
-                            className="btn btn-primary"
-                            onClick={() => {
-                                if (register) {
-                                    handleRegister(username, password, confirm);
-                                } else {
-                                    handleLogin(username, password);
-                                }
-                            }}
-                        >
-                            {register ? 'Register' : 'Login'}
-                        </button>
-                        <button
-                            className="btn btn-primary"
-                            onClick={() => {
-                                setRegister(!register);
-                                setUsername('');
-                                setPassword('');
-                                setConfirm('');
-                                setError(false);
-                                setErrorMessage('');
-                            }}
-                        >
-                            {register ? 'Switch to Login' : 'Switch to Register'}
-                        </button>
+                        <div className="buttons">
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => {
+                                    if (register) {
+                                        handleRegister(username, password, confirm);
+                                    } else {
+                                        handleLogin(username, password);
+                                    }
+                                }}
+                            >
+                                {register ? 'Register' : 'Login'}
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => {
+                                    setRegister(!register);
+                                    setUsername('');
+                                    setPassword('');
+                                    setConfirm('');
+                                    setError(false);
+                                    setErrorMessage('');
+                                }}
+                            >
+                                {register ? 'Switch to Login' : 'Switch to Register'}
+                            </button>
+                        </div>
                         {error && <div className="error-message"><h3>{errorMessage}</h3></div>}
                     </div>
                     <button to="/" className="btn" onClick={handleBackHome}>Back Home</button>
@@ -191,13 +193,15 @@ function SignIn({ handleLogOut }) {
                 <div className="card">
                     <div className="card-body">
                         <h1 className="card-title">You are logged in as {user}</h1>
-                        <button
-                            className="btn btn-primary"
-                            onClick={() => { handleLogOut() }}
-                        >
-                            Logout
-                        </button>
-                        <button to="/" className="btn btn-primary" onClick={handleToDashboard}>To Dashboard</button>
+                        <div className="buttons">
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => { handleLogOut() }}
+                            >
+                                Logout
+                            </button>
+                            <button to="/" className="btn btn-primary" onClick={handleToDashboard}>To Dashboard</button>
+                        </div>
                     </div>
                 </div>
             )}

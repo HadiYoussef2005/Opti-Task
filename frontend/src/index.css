@@ -48,6 +48,12 @@ body {
   margin-bottom: 10px;
 }
 
+.buttons{
+  display:flex;
+  justify-content:center;
+  align-items: center;
+}
+
 .btn {
   display: inline-block;
   font-size: 16px;
@@ -213,6 +219,43 @@ body {
   font-family:Arial, Helvetica, sans-serif;
   font-weight: 600;
   font-size: 30px;
+}
+
+.priority-choice{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content: space-between;
+}
+
+.priority-choice-item{
+  margin: 5px;
+}
+
+.date-container{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.date-container-item{
+  margin: 5px;
+}
+
+.time-container{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.time-container-item{
+  margin: 5px;
+}
+
+.time-container-form{
+  width: 100px;
 }
 
 .navbar{

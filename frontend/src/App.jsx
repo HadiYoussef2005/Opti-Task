@@ -4,6 +4,7 @@ import Home from './pages/home.jsx';
 import SignIn from './pages/signin.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import DeleteUser from './pages/deleteUser';
+import AddItem from './pages/addItem';
 
 const UserContext = createContext();
 
@@ -105,6 +106,7 @@ const App = () => {
           <Route path='/signin' element={<SignIn handleLogOut={handleLogOut} />} />
           <Route path='/dashboard' element={<Dashboard handleLogOut={handleLogOut}/>} />
           <Route path='/deleteUser' element={<DeleteUser handleLogOut={handleLogOut} handleDelete={handleDelete} />} />
+          <Route path='/addItem' element={<AddItem />} />
         </Routes>
       </BrowserRouter>
     </UserContext.Provider>

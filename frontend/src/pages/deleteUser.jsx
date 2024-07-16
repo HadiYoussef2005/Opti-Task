@@ -1,14 +1,16 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../App';
+import NotSignedIn from '../components/notSignedIn'
 
 function DeleteUser({handleDelete,handleLogOut }) {
     const [enterError, setEnterError] = useState(false);
     const navigate = useNavigate();
-    const { user } = useContext(UserContext);
     const [enteredUser, setEnteredUser] = useState('');
+    const { user, loggedIn, setUser, setLoggedIn } = useContext(UserContext);
+
     function handleModalToggle() {
-        navigate(originalPage);
+        navigate('/dashboard');
     }
 
     const handleConfirmDelete = () => {
@@ -21,7 +23,7 @@ function DeleteUser({handleDelete,handleLogOut }) {
         }
     };
 
-    return (
+    return ( loggedIn ? (
         <div className="signin">
             <div className="card">
                 <div className="card-content">
@@ -37,16 +39,20 @@ function DeleteUser({handleDelete,handleLogOut }) {
                             onChange={(e) => setEnteredUser(e.target.value)}
                         />
                     </div>
-                    <button className="btn btn-primary" onClick={handleConfirmDelete}>
-                        Confirm
-                    </button>
-                    <button className="btn btn-primary" onClick={handleModalToggle}>
-                        Cancel
-                    </button>
+                    <div className="buttons">
+                        <button className="btn btn-primary" onClick={handleConfirmDelete}>
+                            Confirm
+                        </button>
+                        <button className="btn btn-primary" onClick={handleModalToggle}>
+                            Cancel
+                        </button>
+                    </div>
                     {enterError && <h4 className="error-message">You entered your username wrong</h4>}
                 </div>
             </div>
-        </div>
+        </div>) : (
+            <NotSignedIn />
+        )
     );
 }
 
