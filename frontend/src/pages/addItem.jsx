@@ -13,6 +13,8 @@ function AddItem() {
     const [priority, setPriority] = useState('low');
     const [dueTime, setDueTime] = useState('');
 
+    console.log(dueTime);
+    
     const handlePriorityChange = (e) => {
         setPriority(e.target.value);
     };

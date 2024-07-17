@@ -16,32 +16,30 @@ function Dashboard({ handleLogOut }) {
         }
     
         const now = new Date();
-        const dueDateTime = new Date(dueDate); 
+        const dueDateTime = new Date(dueDate);
         
-        const overdue = dueDateTime < now; 
-        const today = dueDateTime.toDateString() === now.toDateString(); 
-        const tomorrow = new Date(now.setDate(now.getDate() + 1)).toDateString() === dueDateTime.toDateString(); 
-        let amOrPm = ""
-        const dueDateArr = dueDate.split("T");
-        const dayStr = dueDateArr[0];
-        let timeStr = dueDateArr[1] ? dueDateArr[1].slice(0, -8) : '';
-        let hour = parseInt(timeStr.substring(0,2));
-        hour -= 4;
-        if(hour >= 12){
-            amOrPm = "PM"
-            hour -= 12
+        const overdue = dueDateTime < now;
+        const today = dueDateTime.toDateString() === now.toDateString();
+        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toDateString() === dueDateTime.toDateString();
+    
+        let hour = dueDateTime.getUTCHours();
+        let minute = dueDateTime.getUTCMinutes();
+        let amOrPm = hour >= 12 ? "PM" : "AM";
+        
+        if (hour > 12) {
+            hour -= 12;
+        } else if (hour === 0) {
+            hour = 12;
         }
-        else{
-            amOrPm = "AM"
-        }
-        let newTimeStr = `${hour}:${timeStr.substring(3,5)}`;
-        timeStr = newTimeStr + " " + amOrPm;
+    
+        let timeStr = `${hour}:${minute.toString().padStart(2, '0')} ${amOrPm}`;
+    
         const timeDiff = dueDateTime.getTime() - now.getTime();
         const timeLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
         
         let other = !today && !tomorrow && !overdue;
     
-        return { dayStr, timeStr, overdue, today, tomorrow, timeLeft, other };
+        return { dayStr: dueDateTime.toDateString(), timeStr, overdue, today, tomorrow, timeLeft, other };
     };
     
     
@@ -84,7 +82,7 @@ function Dashboard({ handleLogOut }) {
 
     const handleDelete = async (user, title) => {
         try{
-            response = await fetch("http://localhost:3000/item", {
+            let response = await fetch("http://localhost:3000/item", {
                 method: "DELETE",
                 headers: {
                     "Content-Type":"application/json"
