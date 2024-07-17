@@ -5,6 +5,7 @@ import SignIn from './pages/signin.jsx';
 import Dashboard from './pages/dashboard.jsx';
 import DeleteUser from './pages/deleteUser';
 import AddItem from './pages/addItem';
+import NotExist from './pages/notExist'
 
 const UserContext = createContext();
 
@@ -107,6 +108,7 @@ const App = () => {
           <Route path='/dashboard' element={<Dashboard handleLogOut={handleLogOut}/>} />
           <Route path='/deleteUser' element={<DeleteUser handleLogOut={handleLogOut} handleDelete={handleDelete} />} />
           <Route path='/addItem' element={<AddItem />} />
+          <Route path='*' element={<NotExist />} />
         </Routes>
       </BrowserRouter>
     </UserContext.Provider>

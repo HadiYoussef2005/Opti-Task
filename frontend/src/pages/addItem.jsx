@@ -11,22 +11,53 @@ function AddItem(){
     const [title, setTitle] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [priority, setPriority] = useState('low');
-    const [dueTime, setDueTime] = useState('')
+    const [dueTime, setDueTime] = useState('');
+    
     const handlePriorityChange = (e) => {
         setPriority(e.target.value);
     };
-    const handleSubmit = () => {
-        if(!title || ! dueTime || !dueDate){
+    
+    const handleSubmit = async () => {
+        if (!title || !dueTime || !dueDate) {
             setError(true);
             setErrorMessage("All fields must be filled");
+            return;
         }
-    }
+    
+        try {
+            const response = await fetch("http://localhost:3000/item", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    user: user,
+                    title: title,
+                    dueTime: dueTime,
+                    priority: priority,
+                    dueDate: dueDate,
+                }),
+                credentials: 'include'
+            });
+    
+            if (response.ok) {
+                navigate('/dashboard');
+            } else {
+                setError(true);
+                setErrorMessage(`Failed with status ${response.status}`);
+            }
+        } catch (e) {
+            setError(true);
+            setErrorMessage(`Unexpected Error: ${e.message}`);
+            console.error(e);
+        }
+    };
+    
 
     const handleDashboard = () => {
-        navigate('/dashboard')
-    }
+        navigate('/dashboard');
+    };
 
-    console.log(dueTime);
     return (
         loggedIn ? (
             <div className="signin">
