@@ -9,7 +9,45 @@ function Dashboard({ handleLogOut }) {
     const { user, loggedIn } = useContext(UserContext);
     const [todos, setTodos] = useState({ high: [], medium: [], low: [] });
 
-    // Function to update todo item completion status
+    const filterDate = (dueDate) => {
+        if (!dueDate || typeof dueDate !== 'string') {
+            console.error('Invalid dueDate:', dueDate);
+            return { dayStr: '', timeStr: '', overdue: false, today: false, tomorrow: false, timeLeft: 0, other: false };
+        }
+    
+        const now = new Date();
+        const dueDateTime = new Date(dueDate); 
+        
+        const overdue = dueDateTime < now; 
+        const today = dueDateTime.toDateString() === now.toDateString(); 
+        const tomorrow = new Date(now.setDate(now.getDate() + 1)).toDateString() === dueDateTime.toDateString(); 
+        let amOrPm = ""
+        const dueDateArr = dueDate.split("T");
+        const dayStr = dueDateArr[0];
+        let timeStr = dueDateArr[1] ? dueDateArr[1].slice(0, -8) : '';
+        let hour = parseInt(timeStr.substring(0,2));
+        hour -= 4;
+        if(hour >= 12){
+            amOrPm = "PM"
+            hour -= 12
+        }
+        else{
+            amOrPm = "AM"
+        }
+        let newTimeStr = `${hour}:${timeStr.substring(3,5)}`;
+        timeStr = newTimeStr + " " + amOrPm;
+        const timeDiff = dueDateTime.getTime() - now.getTime();
+        const timeLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        
+        let other = !today && !tomorrow && !overdue;
+    
+        return { dayStr, timeStr, overdue, today, tomorrow, timeLeft, other };
+    };
+    
+    
+    
+    
+
     const handleCheck = async (title, dateTime, priority, completed) => {
         let dateTimeArr = dateTime.split("T");
         let date = dateTimeArr[0];
@@ -39,32 +77,31 @@ function Dashboard({ handleLogOut }) {
         } catch (error) {
             console.error("Error during PUT request:", error);
         }
-    };
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch(`/items?user=${user}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setTodos(data);
-                } else {
-                    console.error('Failed to fetch data');
-                }
-            } catch (error) {
-                console.error('Unexpected Error:', error);
-            }
-        };
-
-        fetchData();
-    }, [user]);
-
+    }
     const handleAddItem = () => {
         navigate('/additem');
     };
 
-    const handleDelete = (title) => {
-        console.log(`Deleting item: ${title}`);
+    const handleDelete = async (user, title) => {
+        try{
+            response = await fetch("http://localhost:3000/item", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type":"application/json"
+                },
+                body: JSON.stringify({
+                    user: user,
+                    title: title
+                })
+            })
+            if(response.ok){
+                console.log(response.status);
+            } else {
+                console.error("There was an unexpected error");
+            }
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     useEffect(() => {
@@ -101,13 +138,27 @@ function Dashboard({ handleLogOut }) {
                                 High
                             </div>
                             <div className="todo-items">
-                                {todos.high.map(todo => (
-                                    <div key={todo.title} className={`todo-item ${todo.completed ? 'checked' : ''}`}>
+                            {todos.high.map(todo => (
+                                    <div key={todo.title} className={`todo-item ${todo.completed ? 'checked' : ''} ${(filterDate(todo.dueDate).overdue && !todo.completed) ? 'overdue' : ''}`}>
                                     <div className="todo-item-left">
                                         <span>{todo.title}</span>
                                     </div>
                                     <div className="todo-item-middle">
-                                        <span>{todo.dueDate}</span>
+                                        {(todo.completed) && (
+                                            <span>Completed</span>
+                                        )}
+                                        {(filterDate(todo.dueDate).today && !filterDate(todo.dueDate).overdue && !todo.completed) && (
+                                            <span>Due today at {filterDate(todo.dueDate).timeStr}</span>
+                                        )}
+                                        {filterDate(todo.dueDate).tomorrow && !todo.completed && (
+                                            <span>Due tomorrow at {filterDate(todo.dueDate).timeStr}</span>
+                                        )}
+                                        {filterDate(todo.dueDate).other && !todo.completed && (
+                                            <span>Due in {filterDate(todo.dueDate).timeLeft} days at {filterDate(todo.dueDate).timeStr}</span>
+                                        )}
+                                        {(filterDate(todo.dueDate).overdue && !todo.completed) && (
+                                            <span>Overdue</span>
+                                        )}
                                     </div>
                                     <div className="todo-item-right">
                                         <input
@@ -122,7 +173,21 @@ function Dashboard({ handleLogOut }) {
                                                     )
                                                 }));}}
                                         />
-                                        <button className="btn-delete">
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    await handleDelete(user, todo.title);
+
+                                                    setTodos(prevTodos => ({
+                                                        ...prevTodos,
+                                                        [todo.priority]: prevTodos[todo.priority].filter(item => item.title !== todo.title)
+                                                    }));
+                                                } catch (error) {
+                                                    console.error('Error deleting item:', error);
+                                                }
+                                            }}
+                                            className="btn-delete"
+                                        >
                                             <i className="fas fa-trash"></i>
                                         </button>
                                         <button className="menu-button" onClick={() => console.log("this works")}>
@@ -139,13 +204,27 @@ function Dashboard({ handleLogOut }) {
                                 Medium
                             </div>
                             <div className="todo-items">
-                                {todos.medium.map(todo => (
+                            {todos.medium.map(todo => (
                                     <div key={todo.title} className={`todo-item ${todo.completed ? 'checked' : ''}`}>
                                     <div className="todo-item-left">
                                         <span>{todo.title}</span>
                                     </div>
                                     <div className="todo-item-middle">
-                                        <span>{todo.dueDate}</span>
+                                        {(todo.completed) && (
+                                            <span>Completed</span>
+                                        )}
+                                        {(filterDate(todo.dueDate).today && !filterDate(todo.dueDate).overdue && !todo.completed) && (
+                                            <span>Due today at {filterDate(todo.dueDate).timeStr}</span>
+                                        )}
+                                        {filterDate(todo.dueDate).tomorrow && !todo.completed && (
+                                            <span>Due tomorrow at {filterDate(todo.dueDate).timeStr}</span>
+                                        )}
+                                        {filterDate(todo.dueDate).other && !todo.completed && (
+                                            <span>Due in {filterDate(todo.dueDate).timeLeft} days at {filterDate(todo.dueDate).timeStr}</span>
+                                        )}
+                                        {(filterDate(todo.dueDate).overdue && !todo.completed) && (
+                                            <span>Overdue</span>
+                                        )}
                                     </div>
                                     <div className="todo-item-right">
                                         <input
@@ -160,7 +239,21 @@ function Dashboard({ handleLogOut }) {
                                                     )
                                                 }));}}
                                         />
-                                        <button className="btn-delete">
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    await handleDelete(user, todo.title);
+
+                                                    setTodos(prevTodos => ({
+                                                        ...prevTodos,
+                                                        [todo.priority]: prevTodos[todo.priority].filter(item => item.title !== todo.title)
+                                                    }));
+                                                } catch (error) {
+                                                    console.error('Error deleting item:', error);
+                                                }
+                                            }}
+                                            className="btn-delete"
+                                        >
                                             <i className="fas fa-trash"></i>
                                         </button>
                                         <button className="menu-button" onClick={() => console.log("this works")}>
@@ -183,7 +276,21 @@ function Dashboard({ handleLogOut }) {
                                         <span>{todo.title}</span>
                                     </div>
                                     <div className="todo-item-middle">
-                                        <span>{todo.dueDate}</span>
+                                    {(todo.completed) && (
+                                            <span>Completed</span>
+                                        )}
+                                        {(filterDate(todo.dueDate).today && !filterDate(todo.dueDate).overdue && !todo.completed) && (
+                                            <span>Due today at {filterDate(todo.dueDate).timeStr}</span>
+                                        )}
+                                        {filterDate(todo.dueDate).tomorrow && !todo.completed && (
+                                            <span>Due tomorrow at {filterDate(todo.dueDate).timeStr}</span>
+                                        )}
+                                        {filterDate(todo.dueDate).other && !todo.completed && (
+                                            <span>Due in {filterDate(todo.dueDate).timeLeft} days at {filterDate(todo.dueDate).timeStr}</span>
+                                        )}
+                                        {(filterDate(todo.dueDate).overdue && !todo.completed) && (
+                                            <span>Overdue</span>
+                                        )}
                                     </div>
                                     <div className="todo-item-right">
                                         <input
@@ -198,7 +305,21 @@ function Dashboard({ handleLogOut }) {
                                                     )
                                                 }));}}
                                         />
-                                        <button className="btn-delete">
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    await handleDelete(user, todo.title);
+
+                                                    setTodos(prevTodos => ({
+                                                        ...prevTodos,
+                                                        [todo.priority]: prevTodos[todo.priority].filter(item => item.title !== todo.title)
+                                                    }));
+                                                } catch (error) {
+                                                    console.error('Error deleting item:', error);
+                                                }
+                                            }}
+                                            className="btn-delete"
+                                        >
                                             <i className="fas fa-trash"></i>
                                         </button>
                                         <button className="menu-button" onClick={() => console.log("this works")}>

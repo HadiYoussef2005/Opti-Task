@@ -305,7 +305,9 @@ body {
   background-color: rgb(30, 179, 30); 
 }
 
-
+.todo-item.overdue {
+  background-color: rgb(190, 24, 24); 
+}
 
 .todo-item-left{
   min-width: 15%;
