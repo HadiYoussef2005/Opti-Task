@@ -1,29 +1,29 @@
 import { useNavigate } from 'react-router-dom';
 import { useContext, useState } from 'react';
-import { UserContext } from '../App';
+import { UserContext } from '../App'
 import NotSignedIn from '../components/notSignedIn';
 
-function AddItem(){
+function AddItem() {
     const navigate = useNavigate();
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const { user, loggedIn, setUser, setLoggedIn } = useContext(UserContext);
+    const { user, loggedIn } = useContext(UserContext);
     const [title, setTitle] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [priority, setPriority] = useState('low');
     const [dueTime, setDueTime] = useState('');
-    
+
     const handlePriorityChange = (e) => {
         setPriority(e.target.value);
     };
-    
+
     const handleSubmit = async () => {
         if (!title || !dueTime || !dueDate) {
             setError(true);
             setErrorMessage("All fields must be filled");
             return;
         }
-    
+
         try {
             const response = await fetch("http://localhost:3000/item", {
                 method: "POST",
@@ -39,20 +39,27 @@ function AddItem(){
                 }),
                 credentials: 'include'
             });
-    
+
             if (response.ok) {
                 navigate('/dashboard');
             } else {
-                setError(true);
-                setErrorMessage(`Failed with status ${response.status}`);
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    setError(true);
+                    setErrorMessage(data.error || 'Unexpected error occurred');
+                } else {
+                    const text = await response.text();
+                    setError(true);
+                    setErrorMessage(text || 'Unexpected error occurred');
+                }
             }
-        } catch (e) {
+        } catch (error) {
             setError(true);
-            setErrorMessage(`Unexpected Error: ${e.message}`);
-            console.error(e);
+            setErrorMessage(`Unexpected Error: ${error.message}`);
+            console.error(error);
         }
     };
-    
 
     const handleDashboard = () => {
         navigate('/dashboard');
@@ -89,7 +96,7 @@ function AddItem(){
                         <div className="form-group">
                             <label className="date-container">
                                 <h3 className="date-container-item">Due Date</h3>
-                                <input 
+                                <input
                                     type="date"
                                     className="date-container-item"
                                     id="dueDate"
@@ -102,7 +109,7 @@ function AddItem(){
                         <div className="form-group">
                             <div className="time-container">
                                 <h3 className="time-container-item">Due Time</h3>
-                                <input 
+                                <input
                                     type="time"
                                     className="time-container-item"
                                     id="dueTime"
@@ -115,9 +122,9 @@ function AddItem(){
                             <button className="btn btn-primary" onClick={handleSubmit}>Submit</button>
                             <button className="btn btn-primary" onClick={handleDashboard}>Dashboard</button>
                         </div>
-                        
+
                     </div>
-                    {error ? (<h3 className="error-message">{errorMessage}</h3>):null}
+                    {error ? (<h3 className="error-message">{errorMessage}</h3>) : null}
                 </div>
             </div>
         ) : (

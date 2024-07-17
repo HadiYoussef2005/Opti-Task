@@ -140,7 +140,7 @@ app.delete('/deleteUser', isAuthenticated, async (req, res) => {
         console.log('Received request to delete user');
         console.log('Username to delete:', username);
 
-        const result = await User.deleteOne({ username: trimmedUsername });
+        const result = await User.deleteOne({ username: username });
 
         console.log('Delete result:', result);
 
@@ -161,12 +161,12 @@ app.post('/item', async (req, res) => {
     try {
         const existingUser = await User.findOne({ username: user });
         if (!existingUser) {
-            return res.status(404).send('User not found');
+            return res.status(404).json({ error: 'User not found' });
         }
 
         const duplicate = existingUser.todos.some(todo => todo.title === title);
         if (duplicate) {
-            return res.status(400).send('A todo with this title already exists');
+            return res.status(400).json({ error: 'A todo with this title already exists' });
         }
 
         const newTodo = {
@@ -179,12 +179,13 @@ app.post('/item', async (req, res) => {
         existingUser.todos.push(newTodo);
         await existingUser.save();
 
-        res.status(200).send('Success!');
+        res.status(200).json({ message: 'Todo item added successfully' });
     } catch (error) {
         console.error(error);
-        res.status(500).send('Internal Server Error');
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 app.delete('/item', async (req, res) => {
     const { user, title } = req.body;
