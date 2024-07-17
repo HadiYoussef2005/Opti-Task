@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const moment = require('moment');
 
 const saltRounds = 10;
 
@@ -131,7 +132,6 @@ app.delete('/deleteUser', isAuthenticated, async (req, res) => {
         console.log('Received request to delete user');
         console.log('Username to delete:', username);
 
-        const trimmedUsername = username.trim();
         const result = await User.deleteOne({ username: trimmedUsername });
 
         console.log('Delete result:', result);
@@ -145,6 +145,169 @@ app.delete('/deleteUser', isAuthenticated, async (req, res) => {
     } catch (err) {
         console.error('Error deleting user:', err);
         return res.status(500).send('Error deleting user');
+    }
+});
+
+app.post('/item', async (req, res) => {
+    const { user, title, priority, dueDate, dueTime } = req.body;
+    try {
+        const existingUser = await User.findOne({ username: user });
+        if (!existingUser) {
+            return res.status(404).send('User not found');
+        }
+
+        const duplicate = existingUser.todos.some(todo => todo.title === title);
+        if (duplicate) {
+            return res.status(400).send('A todo with this title already exists');
+        }
+
+        const newTodo = {
+            title,
+            priority: priority || 'medium',
+            dueDate,
+            dueTime
+        };
+
+        existingUser.todos.push(newTodo);
+        await existingUser.save();
+
+        res.status(200).send('Success!');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.delete('/item', async (req, res) => {
+    const { user, title } = req.body;
+    try {
+        const existingUser = await User.findOne({ username: user });
+        if (!existingUser) {
+            return res.status(404).send('User not found');
+        }
+
+        const todoIndex = existingUser.todos.findIndex(todo => todo.title === title);
+        if (todoIndex === -1) {
+            return res.status(404).send('Todo item not found');
+        }
+
+        existingUser.todos.splice(todoIndex, 1);
+        await existingUser.save();
+
+        res.status(200).send('Todo item deleted successfully');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.put('/item', async (req, res) => {
+    const { user, title, newTitle, priority, dueDate, dueTime, completed } = req.body;
+    try {
+        const existingUser = await User.findOne({ username: user });
+        if (!existingUser) {
+            return res.status(404).send('User not found');
+        }
+
+        const todo = existingUser.todos.find(todo => todo.title === title);
+        if (!todo) {
+            return res.status(404).send('Todo item not found');
+        }
+
+        if (newTitle) todo.title = newTitle;
+        if (priority) todo.priority = priority;
+        if (dueDate) todo.dueDate = dueDate;
+        if (dueTime) todo.dueTime = dueTime;
+        if (typeof completed === 'boolean') todo.completed = completed;
+
+        await existingUser.save();
+
+        res.status(200).send('Todo item updated successfully');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.get('/items', async (req, res) => {
+    const { user } = req.query; 
+    try {
+        const existingUser = await User.findOne({ username: user });
+        if (!existingUser) {
+            return res.status(404).send('User not found');
+        }
+        
+        const groupedTodos = existingUser.todos.reduce((acc, todo) => {
+            if (!acc[todo.priority]) {
+                acc[todo.priority] = [];
+            }
+            acc[todo.priority].push(todo);
+            return acc;
+        }, {});
+
+        const highCount = groupedTodos['high'] ? groupedTodos['high'].length : 0;
+        const mediumCount = groupedTodos['medium'] ? groupedTodos['medium'].length : 0;
+        const lowCount = groupedTodos['low'] ? groupedTodos['low'].length : 0;
+        const lengths = [highCount, mediumCount, lowCount];
+        const currentPriority = ["high", "medium", "low"];
+        let itemList = [];
+
+        lengths.forEach((length, counter) => {
+            for (let i = 0; i < length; i++) {
+                const dueDate = groupedTodos[currentPriority[counter]][i].dueDate;
+                const dueTime = groupedTodos[currentPriority[counter]][i].dueTime;
+                const completed = groupedTodos[currentPriority[counter]][i].completed;
+
+                const dateParts = dueDate.split('-');
+                const year = parseInt(dateParts[0], 10);
+                const month = parseInt(dateParts[1], 10) - 1; 
+                const day = parseInt(dateParts[2], 10);
+                
+                const timeParts = dueTime.split(':');
+                const hour = parseInt(timeParts[0], 10);
+                const minute = parseInt(timeParts[1], 10);
+
+                const dateTime = moment({ year, month, day, hour, minute });
+
+                const title = groupedTodos[currentPriority[counter]][i].title;
+                const priority = currentPriority[counter];
+
+                itemList.push({
+                    priority,
+                    title,
+                    dateTime, 
+                    completed
+                });
+            }
+        });
+
+        itemList.sort((a, b) => {
+            if (a.dateTime.isSame(b.dateTime, 'day')) {
+                return a.dateTime.diff(b.dateTime, 'minute');
+            } else {
+                return a.dateTime.diff(b.dateTime, 'day');
+            }
+        });
+
+        let sortedTodos = {
+            high: [],
+            medium: [],
+            low: []
+        };
+
+        itemList.forEach(item => {
+            sortedTodos[item.priority].push({
+                title: item.title,
+                priority: item.priority,
+                dueDate: item.dateTime,
+                completed: item.completed
+            });
+        });
+
+        res.status(200).json(sortedTodos); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
     }
 });
 

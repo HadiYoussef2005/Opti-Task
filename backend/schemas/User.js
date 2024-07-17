@@ -7,9 +7,9 @@ const todoSchema = new Schema({
     todos: [
         {
             title: { type: String, required: true },
-            description: { type: String, default: '' },
             completed: { type: Boolean, default: false },
-            dueDate: { type: Date },
+            dueDate: { type: String },
+            dueTime: { type: String },
             priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' }
         }
     ]
