@@ -14,58 +14,54 @@ function Dashboard({ handleLogOut }) {
             console.error('Invalid dueDate:', dueDate);
             return { dayStr: '', timeStr: '', overdue: false, today: false, tomorrow: false, timeLeft: 0, other: false };
         }
-    
+        console.log("Due date: ", dueDate);
         const now = new Date();
-        const nowUtc = new Date(
-            now.getUTCFullYear(),
-            now.getUTCMonth(),
-            now.getUTCDate(),
-            now.getUTCHours(),
-            now.getUTCMinutes(),
-            now.getUTCSeconds(),
-            now.getUTCMilliseconds()
-        );
-    
         const dueDateTime = new Date(dueDate);
-        const localDate = new Date(dueDateTime.toLocaleString());
-        const year = localDate.getFullYear();
-        const month = String(localDate.getMonth() + 1).padStart(2, '0');
-        const dayStr = String(localDate.getDate()).padStart(2, '0');
-        let localHour = localDate.getHours();
-        let localMin = localDate.getMinutes();
+        dueDateTime.setHours(dueDateTime.getHours()-4 < 0 ? 24-(4-dueDateTime.getHours()):dueDateTime.getHours()-4);
+        console.log("Original", dueDateTime);
     
+        const year = dueDateTime.getFullYear();
+        const month = String(dueDateTime.getMonth() + 1).padStart(2, '0');
+        const day = String(dueDateTime.getDate()).padStart(2, '0');
+    
+        const dayStr = `${year}-${month}-${day}`;
+    
+        let localHour = dueDateTime.getHours();
+        let localMin = dueDateTime.getMinutes();
         let flag = true;
-        let amOrPm = "";
+        let amOrPm = "AM";
     
-        // Adjust localHour and determine amOrPm
-        if (localHour <= 4) {
-            localHour = (localHour - 4) + 12;
-            amOrPm = "PM";
-            flag = false;
-        } else {
-            localHour -= 4;
-        }
-    
-        if (localHour >= 12 && flag) {
-            amOrPm = "PM";
-            if (localHour > 12) {
-                localHour -= 12;
-            }
-        } else if (localHour < 12 && flag) {
-            amOrPm = "AM";
-            if (localHour === 0) {
-                localHour = 12;
-            }
+        // if (localHour <= 4) {
+        //     localHour = (localHour - 4) + 12;
+        //     amOrPm = "PM";
+        //     flag = false;
+        // } else {
+        //     localHour -= 4;
+        // }
+        // if(flag){
+        //     amOrPm = localHour >= 12 ? "PM" : "AM";
+        // }
+        
+        if (localHour > 12) {
+            localHour -= 12;
+            amOrPm = "PM"
+        } else if (localHour === 0) {
+            localHour = 12;
         }
     
         const timeStr = `${String(localHour).padStart(2, '0')}:${String(localMin).padStart(2, '0')} ${amOrPm}`;
+
+        console.log(dueDateTime);
+        console.log(now);
+        const isOverdue = dueDateTime < now;
+        const isToday = dueDateTime.toDateString() === now.toDateString();
+        const isTomorrow = new Date(now.getTime() + 86400000).toDateString() === dueDateTime.toDateString();
     
-        const overdue = (localHour < now.getHours()) || (localHour === now.getHours() && localMin < now.getMinutes());
+        const overdue = isOverdue;
+        const today = isToday && !isOverdue;
+        const tomorrow = isTomorrow && !isOverdue;
     
-        const today = dueDateTime.toDateString() === now.toDateString();
-        const tomorrow = new Date(now.setDate(now.getDate() + 1)).toDateString() === dueDateTime.toDateString();
-    
-        const timeDiff = dueDateTime.getTime() - nowUtc.getTime() - 1;
+        const timeDiff = dueDateTime.getTime() - now.getTime();
         const timeLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
     
         const other = !today && !tomorrow && !overdue;
@@ -74,7 +70,7 @@ function Dashboard({ handleLogOut }) {
     };
 
     function handleEdit (title, date, time, priority, completed)  {
-        const url = `/todoedit?title=${encodeURIComponent(title)}&dayStr=${encodeURIComponent(date)}&timeStr=${encodeURIComponent(time)}&priority=${encodeURIComponent(priority)}&completed=${encodeURIComponent(completed.toString())}`;
+        const url = `/edittodo?title=${encodeURIComponent(title)}&dayStr=${encodeURIComponent(date)}&timeStr=${encodeURIComponent(time)}&priority=${encodeURIComponent(priority)}&completed=${encodeURIComponent(completed.toString())}`;
         navigate(url);
     }
     
@@ -221,7 +217,7 @@ function Dashboard({ handleLogOut }) {
                                             >
                                                 <i className="fas fa-trash"></i>
                                             </button>
-                                            <button className="menu-button" onClick={()=>{handleEdit(todo.title, todo.dueDate, todo.dueTime, todo.priority, todo.completed)}}>
+                                            <button className="menu-button" onClick={()=>{handleEdit(todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed)}}>
                                                 &#x22EE;
                                             </button>
                                         </div>
@@ -287,7 +283,7 @@ function Dashboard({ handleLogOut }) {
                                         >
                                             <i className="fas fa-trash"></i>
                                         </button>
-                                        <button className="menu-button" onClick={() => console.log("this works")}>
+                                        <button className="menu-button" onClick={()=>{handleEdit(todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed)}}>
                                             &#x22EE;
                                         </button>
                                     </div>
@@ -353,7 +349,7 @@ function Dashboard({ handleLogOut }) {
                                         >
                                             <i className="fas fa-trash"></i>
                                         </button>
-                                        <button className="menu-button" onClick={() => console.log("this works")}>
+                                        <button className="menu-button" onClick={()=>{handleEdit(todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed)}}>
                                             &#x22EE;
                                         </button>
                                     </div>

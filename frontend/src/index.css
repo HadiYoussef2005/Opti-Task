@@ -314,6 +314,7 @@ body {
   word-wrap: break-word; 
   white-space: normal;
   hyphens: manual;
+  margin-right: 10px;
 }
 
 .todo-item-middle{
@@ -321,6 +322,7 @@ body {
   word-wrap: break-word; 
   white-space: normal;
   hyphens: manual;
+  margin-left: 10px;
 }
 
 .todo-item-right{

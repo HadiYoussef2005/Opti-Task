@@ -14,10 +14,94 @@ function EditTodo() {
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [title, setTitle] = useState(query.get("title") || "");
+    const originalTitle = query.get("title") || "";
     const [timeStr, setTimeStr] = useState(query.get("timeStr") || "");
+    const [utcTime, setUtcTime] = useState('');
     const [dayStr, setDayStr] = useState(query.get("dayStr") || "");
     const [completed, setCompleted] = useState(query.get("completed") === 'true');
     const [priority, setPriority] = useState(query.get("priority") || "low");
+    const initialTimeChange = (event) => {
+        if (!event || !event.target) {
+            console.error("Event or event.target is undefined:", event);
+            return;
+        }
+
+        console.log("Full event object:", event);
+
+        const { value } = event.target;
+        console.log("Value before passing to handleTimeChange:", value);
+
+
+        handleTimeChange(value);
+    }
+    
+    const handleTimeChange = (time) => {
+        console.log("Received Time From handleTimeChange:", time);
+    
+        if (!time || typeof time !== 'string' || time.trim() === '') {
+            console.error("Invalid time format or time is undefined:", time);
+            return;
+        }
+
+        let [hours, minutes] = time.split(":");
+    
+        let d = new Date();
+        d.setHours(hours);
+        d.setMinutes(minutes);
+
+        let utcTimeString = d.toUTCString();
+    
+        console.log("Original Time:", time);
+        console.log("UTC Time:", utcTimeString);
+    
+        setTimeStr(time)
+        let arr = utcTimeString.split(' ');
+        let utcTime = arr[4];
+        let times = utcTime.split(":");
+        let hour = times[0];
+        let minute = times[1];
+        utcTime = hour + ":" + minute;
+        console.log(utcTime)
+        setUtcTime(utcTime);
+        setTimeStr(time);
+    }
+
+    const handleDateChange = (e) => {
+        setDayStr(e.target.value)
+    }
+
+    function handlePriorityChange (e) {
+        setPriority(e.target.value);
+    };
+
+    const handleSubmit = async () => {
+        try{
+            const response = await fetch('http://localhost:3000/item', {
+                method: "PUT",
+                headers: {
+                    "Content-Type":"application/json"
+                },
+                body: JSON.stringify({
+                    user:user,
+                    title:originalTitle,
+                    newTitle:title, 
+                    priority:priority, 
+                    dueDate:dayStr, 
+                    dueTime:utcTime, 
+                    completed:completed
+                })
+            });
+            if(response.ok){
+                console.log(response.status);
+                navigate('/dashboard');
+            } else {
+                console.log("Weird error");
+            }
+        } catch (e) {
+            setError(true);
+            setErrorMessage(e);
+        }
+    }
 
     useEffect(() => {
         if (timeStr.includes("PM") || timeStr.includes("AM")) {
@@ -33,18 +117,7 @@ function EditTodo() {
 
             setTimeStr(`${hours.toString().padStart(2, '0')}:${minutes}`);
         }
-
-        console.log("User:", user);
-        console.log("Title:", title);
-        console.log("TimeStr:", timeStr);
-        console.log("DayStr:", dayStr);
-        console.log("Completed:", completed);
-        console.log("Priority:", priority);
     }, [timeStr, user, title, dayStr, completed, priority]);
-
-    function handleSubmit() {
-        navigate("/dashboard");
-    }
 
     function handleDashboard() {
         navigate("/dashboard");
@@ -69,7 +142,7 @@ function EditTodo() {
                         <label className="priority-choice">
                             <h3 className="priority-choice-item">Select Priority</h3>
                             <div className="priority-choice-item">
-                                <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+                                <select value={priority} onChange={(e)=>{handlePriorityChange(e)}}>
                                     <option value="low">Low</option>
                                     <option value="medium">Medium</option>
                                     <option value="high">High</option>
@@ -86,7 +159,7 @@ function EditTodo() {
                                 id="dueDate"
                                 placeholder="yyyy-mm-dd"
                                 value={dayStr}
-                                onChange={(e) => setDayStr(e.target.value)}
+                                onChange={(e) => handleDateChange(e)}
                             />
                         </label>
                     </div>
@@ -98,7 +171,7 @@ function EditTodo() {
                                 className="time-container-item"
                                 id="dueTime"
                                 value={timeStr}
-                                onChange={(e) => setTimeStr(e.target.value)}
+                                onChange={(e) => initialTimeChange(e)}
                             />
                         </div>
                     </div>
