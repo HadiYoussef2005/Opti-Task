@@ -12,9 +12,59 @@ function AddItem() {
     const [dueDate, setDueDate] = useState('');
     const [priority, setPriority] = useState('low');
     const [dueTime, setDueTime] = useState('');
+    const [utcTime, setUtcTime] = useState('');
 
-    console.log(dueTime);
+    const initialTimeChange = (event) => {
+        if (!event || !event.target) {
+            console.error("Event or event.target is undefined:", event);
+            return;
+        }
+
+        console.log("Full event object:", event);
+
+        const { value } = event.target;
+        console.log("Value before passing to handleTimeChange:", value);
+
+
+        handleTimeChange(value);
+    }
     
+    const handleTimeChange = (time) => {
+        console.log("Received Time From handleTimeChange:", time);
+    
+        if (!time || typeof time !== 'string' || time.trim() === '') {
+            console.error("Invalid time format or time is undefined:", time);
+            return;
+        }
+
+        let [hours, minutes] = time.split(":");
+    
+        let d = new Date();
+        d.setHours(hours);
+        d.setMinutes(minutes);
+
+        let utcTimeString = d.toUTCString();
+    
+        console.log("Original Time:", time);
+        console.log("UTC Time:", utcTimeString);
+    
+        setDueTime(time)
+        let arr = utcTimeString.split(' ');
+        let utcTime = arr[4];
+        let times = utcTime.split(":");
+        let hour = times[0];
+        let minute = times[1];
+        utcTime = hour + ":" + minute;
+        console.log(utcTime)
+        setUtcTime(utcTime);
+        setDueTime(time);
+    }
+
+    const handleDateChange = (day) => {
+        setDueDate(day)
+        console.log(dueDate);
+    }
+
     const handlePriorityChange = (e) => {
         setPriority(e.target.value);
     };
@@ -35,7 +85,7 @@ function AddItem() {
                 body: JSON.stringify({
                     user: user,
                     title: title,
-                    dueTime: dueTime,
+                    dueTime: utcTime,
                     priority: priority,
                     dueDate: dueDate,
                 }),
@@ -104,7 +154,7 @@ function AddItem() {
                                     id="dueDate"
                                     placeholder="yyyy-mm-dd"
                                     value={dueDate}
-                                    onChange={(e) => setDueDate(e.target.value)}
+                                    onChange={(e) => handleDateChange(e.target.value)}
                                 />
                             </label>
                         </div>
@@ -116,7 +166,7 @@ function AddItem() {
                                     className="time-container-item"
                                     id="dueTime"
                                     value={dueTime}
-                                    onChange={(e) => setDueTime(e.target.value)}
+                                    onChange={(e) => initialTimeChange(e)}
                                 />
                             </div>
                         </div>

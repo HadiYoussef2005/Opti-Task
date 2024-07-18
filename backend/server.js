@@ -263,7 +263,7 @@ app.get('/items', async (req, res) => {
                 const hour = parseInt(timeParts[0], 10);
                 const minute = parseInt(timeParts[1], 10);
 
-                const dateTime = moment.utc({ year, month, day, hour, minute });
+                const dateTime = moment({ year, month, day, hour, minute });
 
                 const title = groupedTodos[currentPriority[counter]][i].title;
                 const priority = currentPriority[counter];
@@ -295,7 +295,7 @@ app.get('/items', async (req, res) => {
             sortedTodos[item.priority].push({
                 title: item.title,
                 priority: item.priority,
-                dueDate: item.dateTime.toISOString(),
+                dueDate: item.dateTime,
                 completed: item.completed
             });
         });

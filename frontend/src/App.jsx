@@ -6,6 +6,7 @@ import Dashboard from './pages/dashboard.jsx';
 import DeleteUser from './pages/deleteUser';
 import AddItem from './pages/addItem';
 import NotExist from './pages/notExist'
+import EditTodo from './pages/editTodo'
 
 const UserContext = createContext();
 
@@ -25,7 +26,6 @@ const App = () => {
           credentials: 'include'
         });
         const info = await response.json();
-        console.log("Fetched data:", info);
 
         if (info.loggedIn && info.user) {
           setUser(info.user.username);
@@ -108,6 +108,7 @@ const App = () => {
           <Route path='/dashboard' element={<Dashboard handleLogOut={handleLogOut}/>} />
           <Route path='/deleteUser' element={<DeleteUser handleLogOut={handleLogOut} handleDelete={handleDelete} />} />
           <Route path='/addItem' element={<AddItem />} />
+          <Route path='/edittodo' element={<EditTodo />} />
           <Route path='*' element={<NotExist />} />
         </Routes>
       </BrowserRouter>

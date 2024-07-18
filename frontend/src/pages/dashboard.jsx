@@ -16,34 +16,67 @@ function Dashboard({ handleLogOut }) {
         }
     
         const now = new Date();
-        const dueDateTime = new Date(dueDate);
-        
-        const overdue = dueDateTime < now;
-        const today = dueDateTime.toDateString() === now.toDateString();
-        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toDateString() === dueDateTime.toDateString();
+        const nowUtc = new Date(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate(),
+            now.getUTCHours(),
+            now.getUTCMinutes(),
+            now.getUTCSeconds(),
+            now.getUTCMilliseconds()
+        );
     
-        let hour = dueDateTime.getUTCHours();
-        let minute = dueDateTime.getUTCMinutes();
-        let amOrPm = hour >= 12 ? "PM" : "AM";
-        
-        if (hour > 12) {
-            hour -= 12;
-        } else if (hour === 0) {
-            hour = 12;
+        const dueDateTime = new Date(dueDate);
+        const localDate = new Date(dueDateTime.toLocaleString());
+        const year = localDate.getFullYear();
+        const month = String(localDate.getMonth() + 1).padStart(2, '0');
+        const dayStr = String(localDate.getDate()).padStart(2, '0');
+        let localHour = localDate.getHours();
+        let localMin = localDate.getMinutes();
+    
+        let flag = true;
+        let amOrPm = "";
+    
+        // Adjust localHour and determine amOrPm
+        if (localHour <= 4) {
+            localHour = (localHour - 4) + 12;
+            amOrPm = "PM";
+            flag = false;
+        } else {
+            localHour -= 4;
         }
     
-        let timeStr = `${hour}:${minute.toString().padStart(2, '0')} ${amOrPm}`;
+        if (localHour >= 12 && flag) {
+            amOrPm = "PM";
+            if (localHour > 12) {
+                localHour -= 12;
+            }
+        } else if (localHour < 12 && flag) {
+            amOrPm = "AM";
+            if (localHour === 0) {
+                localHour = 12;
+            }
+        }
     
-        const timeDiff = dueDateTime.getTime() - now.getTime();
+        const timeStr = `${String(localHour).padStart(2, '0')}:${String(localMin).padStart(2, '0')} ${amOrPm}`;
+    
+        const overdue = (localHour < now.getHours()) || (localHour === now.getHours() && localMin < now.getMinutes());
+    
+        const today = dueDateTime.toDateString() === now.toDateString();
+        const tomorrow = new Date(now.setDate(now.getDate() + 1)).toDateString() === dueDateTime.toDateString();
+    
+        const timeDiff = dueDateTime.getTime() - nowUtc.getTime() - 1;
         const timeLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        
-        let other = !today && !tomorrow && !overdue;
     
-        return { dayStr: dueDateTime.toDateString(), timeStr, overdue, today, tomorrow, timeLeft, other };
+        const other = !today && !tomorrow && !overdue;
+    
+        return { dayStr, timeStr, overdue, today, tomorrow, timeLeft, other };
     };
-    
-    
-    
+
+    function handleEdit (title, date, time, priority, completed)  {
+        const url = `/todoedit?title=${encodeURIComponent(title)}&dayStr=${encodeURIComponent(date)}&timeStr=${encodeURIComponent(time)}&priority=${encodeURIComponent(priority)}&completed=${encodeURIComponent(completed.toString())}`;
+        navigate(url);
+    }
     
 
     const handleCheck = async (title, dateTime, priority, completed) => {
@@ -70,7 +103,7 @@ function Dashboard({ handleLogOut }) {
             if (response.ok) {
                 console.log("Item updated successfully");
             } else {
-                console.error("HTTP error:", response.status);
+                console.error("HTTP error");
             }
         } catch (error) {
             console.error("Error during PUT request:", error);
@@ -82,7 +115,7 @@ function Dashboard({ handleLogOut }) {
 
     const handleDelete = async (user, title) => {
         try{
-            let response = await fetch("http://localhost:3000/item", {
+            const response = await fetch("http://localhost:3000/item", {
                 method: "DELETE",
                 headers: {
                     "Content-Type":"application/json"
@@ -137,62 +170,62 @@ function Dashboard({ handleLogOut }) {
                             </div>
                             <div className="todo-items">
                             {todos.high.map(todo => (
-                                    <div key={todo.title} className={`todo-item ${todo.completed ? 'checked' : ''} ${(filterDate(todo.dueDate).overdue && !todo.completed) ? 'overdue' : ''}`}>
-                                    <div className="todo-item-left">
-                                        <span>{todo.title}</span>
-                                    </div>
-                                    <div className="todo-item-middle">
-                                        {(todo.completed) && (
-                                            <span>Completed</span>
-                                        )}
-                                        {(filterDate(todo.dueDate).today && !filterDate(todo.dueDate).overdue && !todo.completed) && (
-                                            <span>Due today at {filterDate(todo.dueDate).timeStr}</span>
-                                        )}
-                                        {filterDate(todo.dueDate).tomorrow && !todo.completed && (
-                                            <span>Due tomorrow at {filterDate(todo.dueDate).timeStr}</span>
-                                        )}
-                                        {filterDate(todo.dueDate).other && !todo.completed && (
-                                            <span>Due in {filterDate(todo.dueDate).timeLeft} days at {filterDate(todo.dueDate).timeStr}</span>
-                                        )}
-                                        {(filterDate(todo.dueDate).overdue && !todo.completed) && (
-                                            <span>Overdue</span>
-                                        )}
-                                    </div>
-                                    <div className="todo-item-right">
-                                        <input
-                                            type="checkbox"
-                                            checked={todo.completed}
-                                            onChange={() => {
-                                                handleCheck(todo.title, todo.dueDate, todo.priority); 
-                                                setTodos(prevTodos => ({
-                                                    ...prevTodos,
-                                                    [todo.priority]: prevTodos[todo.priority].map(item =>
-                                                        item.title === todo.title ? { ...item, completed: !todo.completed } : item
-                                                    )
-                                                }));}}
-                                        />
-                                        <button
-                                            onClick={async () => {
-                                                try {
-                                                    await handleDelete(user, todo.title);
-
+                                    <div key={todo.title} className={`todo-item ${todo.completed ? 'checked' : ''} ${(!todo.completed && filterDate(todo.dueDate).overdue) ? 'overdue' : ''}`}>
+                                        <div className="todo-item-left">
+                                            <span>{todo.title}</span>
+                                        </div>
+                                        <div className="todo-item-middle">
+                                            {(todo.completed) && (
+                                                <span>Completed</span>
+                                            )}
+                                            {(filterDate(todo.dueDate).today && !filterDate(todo.dueDate).overdue && !todo.completed) && (
+                                                <span>Due today at {filterDate(todo.dueDate).timeStr}</span>
+                                            )}
+                                            {filterDate(todo.dueDate).tomorrow && !todo.completed && (
+                                                <span>Due tomorrow at {filterDate(todo.dueDate).timeStr}</span>
+                                            )}
+                                            {filterDate(todo.dueDate).other && !todo.completed && (
+                                                <span>Due in {filterDate(todo.dueDate).timeLeft} days at {filterDate(todo.dueDate).timeStr}</span>
+                                            )}
+                                            {(filterDate(todo.dueDate).overdue && !todo.completed) && (
+                                                <span>Overdue</span>
+                                            )}
+                                        </div>
+                                        <div className="todo-item-right">
+                                            <input
+                                                type="checkbox"
+                                                checked={todo.completed}
+                                                onChange={() => {
+                                                    handleCheck(todo.title, todo.dueDate, todo.priority); 
                                                     setTodos(prevTodos => ({
                                                         ...prevTodos,
-                                                        [todo.priority]: prevTodos[todo.priority].filter(item => item.title !== todo.title)
-                                                    }));
-                                                } catch (error) {
-                                                    console.error('Error deleting item:', error);
-                                                }
-                                            }}
-                                            className="btn-delete"
-                                        >
-                                            <i className="fas fa-trash"></i>
-                                        </button>
-                                        <button className="menu-button" onClick={() => console.log("this works")}>
-                                            &#x22EE;
-                                        </button>
+                                                        [todo.priority]: prevTodos[todo.priority].map(item =>
+                                                            item.title === todo.title ? { ...item, completed: !todo.completed } : item
+                                                        )
+                                                    }));}}
+                                            />
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        await handleDelete(user, todo.title);
+
+                                                        setTodos(prevTodos => ({
+                                                            ...prevTodos,
+                                                            [todo.priority]: prevTodos[todo.priority].filter(item => item.title !== todo.title)
+                                                        }));
+                                                    } catch (error) {
+                                                        console.error('Error deleting item:', error);
+                                                    }
+                                                }}
+                                                className="btn-delete"
+                                            >
+                                                <i className="fas fa-trash"></i>
+                                            </button>
+                                            <button className="menu-button" onClick={()=>{handleEdit(todo.title, todo.dueDate, todo.dueTime, todo.priority, todo.completed)}}>
+                                                &#x22EE;
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
                                 
                                 ))}
                             </div>
@@ -203,7 +236,7 @@ function Dashboard({ handleLogOut }) {
                             </div>
                             <div className="todo-items">
                             {todos.medium.map(todo => (
-                                    <div key={todo.title} className={`todo-item ${todo.completed ? 'checked' : ''}`}>
+                                    <div key={todo.title} className={`todo-item ${todo.completed ? 'checked' : ''} ${(!todo.completed && filterDate(todo.dueDate).overdue) ? 'overdue' : ''}`}>
                                     <div className="todo-item-left">
                                         <span>{todo.title}</span>
                                     </div>
@@ -269,12 +302,12 @@ function Dashboard({ handleLogOut }) {
                             </div>
                             <div className="todo-items">
                                 {todos.low.map(todo => (
-                                    <div key={todo.title} className={`todo-item ${todo.completed ? 'checked' : ''}`}>
+                                    <div key={todo.title} className={`todo-item ${todo.completed ? 'checked' : ''} ${(!todo.completed && filterDate(todo.dueDate).overdue) ? 'overdue' : ''}`}>
                                     <div className="todo-item-left">
                                         <span>{todo.title}</span>
                                     </div>
                                     <div className="todo-item-middle">
-                                    {(todo.completed) && (
+                                        {(todo.completed) && (
                                             <span>Completed</span>
                                         )}
                                         {(filterDate(todo.dueDate).today && !filterDate(todo.dueDate).overdue && !todo.completed) && (
@@ -339,4 +372,3 @@ function Dashboard({ handleLogOut }) {
 }
 
 export default Dashboard;
-
