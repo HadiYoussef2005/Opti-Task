@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const moment = require('moment');
+const { v4: uuidv4 } = require('uuid');
 
 const saltRounds = 10;
 
@@ -151,12 +152,8 @@ app.post('/item', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const duplicate = existingUser.todos.some(todo => todo.title === title);
-        if (duplicate) {
-            return res.status(400).json({ error: 'A todo with this title already exists' });
-        }
-
         const newTodo = {
+            uuid: uuidv4(),
             title,
             priority: priority || 'medium',
             dueDate,
@@ -166,7 +163,7 @@ app.post('/item', async (req, res) => {
         existingUser.todos.push(newTodo);
         await existingUser.save();
 
-        res.status(200).json({ message: 'Todo item added successfully' });
+        res.status(200).json({ message: 'Todo item added successfully', uuid: newTodo.uuid });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal server error' });
@@ -175,14 +172,14 @@ app.post('/item', async (req, res) => {
 
 
 app.delete('/item', async (req, res) => {
-    const { user, title } = req.body;
+    const { user, uuid } = req.body;
     try {
         const existingUser = await User.findOne({ username: user });
         if (!existingUser) {
             return res.status(404).send('User not found');
         }
 
-        const todoIndex = existingUser.todos.findIndex(todo => todo.title === title);
+        const todoIndex = existingUser.todos.findIndex(todo => todo.uuid === uuid);
         if (todoIndex === -1) {
             return res.status(404).send('Todo item not found');
         }
@@ -197,24 +194,28 @@ app.delete('/item', async (req, res) => {
     }
 });
 
+
 app.put('/item', async (req, res) => {
-    const { user, title, newTitle, priority, dueDate, dueTime, completed } = req.body;
+    const { uuid, user, newTitle, priority, dueDate, dueTime, completed } = req.body;
     try {
         const existingUser = await User.findOne({ username: user });
         if (!existingUser) {
             return res.status(404).send('User not found');
         }
 
-        const todo = existingUser.todos.find(todo => todo.title === title);
+        const todo = existingUser.todos.find(todo => todo.uuid === uuid);
         if (!todo) {
             return res.status(404).send('Todo item not found');
         }
 
-        if (newTitle) todo.title = newTitle;
-        if (priority) todo.priority = priority;
-        if (dueDate) todo.dueDate = dueDate;
-        if (dueTime) todo.dueTime = dueTime;
-        if (typeof completed === 'boolean') todo.completed = completed;
+        // Update fields only if they are provided (i.e., not null or undefined)
+        if (newTitle !== undefined && newTitle !== null) todo.title = newTitle;
+        if (priority !== undefined && priority !== null) todo.priority = priority;
+        if (dueDate !== undefined && dueDate !== null && dueDate !== '') todo.dueDate = dueDate;
+        if (dueTime !== undefined && dueTime !== null && dueTime !== '') todo.dueTime = dueTime;
+        if (completed !== undefined && completed !== null) todo.completed = completed; // Corrected from `dueTime` to `completed`
+
+        console.log("Completed: " + completed);
 
         await existingUser.save();
 
@@ -225,14 +226,16 @@ app.put('/item', async (req, res) => {
     }
 });
 
+
+
 app.get('/items', async (req, res) => {
-    const { user } = req.query; 
+    const { user } = req.query;
     try {
         const existingUser = await User.findOne({ username: user });
         if (!existingUser) {
             return res.status(404).send('User not found');
         }
-        
+
         const groupedTodos = existingUser.todos.reduce((acc, todo) => {
             if (!acc[todo.priority]) {
                 acc[todo.priority] = [];
@@ -256,9 +259,9 @@ app.get('/items', async (req, res) => {
 
                 const dateParts = dueDate.split('-');
                 const year = parseInt(dateParts[0], 10);
-                const month = parseInt(dateParts[1], 10) - 1; 
+                const month = parseInt(dateParts[1], 10) - 1;
                 const day = parseInt(dateParts[2], 10);
-                
+
                 const timeParts = dueTime.split(':');
                 const hour = parseInt(timeParts[0], 10);
                 const minute = parseInt(timeParts[1], 10);
@@ -267,11 +270,13 @@ app.get('/items', async (req, res) => {
 
                 const title = groupedTodos[currentPriority[counter]][i].title;
                 const priority = currentPriority[counter];
+                const uuid = groupedTodos[currentPriority[counter]][i].uuid;
 
                 itemList.push({
+                    uuid,
                     priority,
                     title,
-                    dateTime, 
+                    dateTime,
                     completed
                 });
             }
@@ -293,6 +298,7 @@ app.get('/items', async (req, res) => {
 
         itemList.forEach(item => {
             sortedTodos[item.priority].push({
+                uuid: item.uuid,
                 title: item.title,
                 priority: item.priority,
                 dueDate: item.dateTime,
@@ -300,12 +306,13 @@ app.get('/items', async (req, res) => {
             });
         });
 
-        res.status(200).json(sortedTodos); 
+        res.status(200).json(sortedTodos);
     } catch (error) {
         console.error(error);
         res.status(500).send('Internal Server Error');
     }
 });
+
 
 
 app.listen(port, () => {

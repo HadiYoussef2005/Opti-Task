@@ -13,6 +13,7 @@ function EditTodo() {
     const query = useQuery();
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [uuid, setUuid] = useState(query.get('uuid') || "");
     const [title, setTitle] = useState(query.get("title") || "");
     const originalTitle = query.get("title") || "";
     const [timeStr, setTimeStr] = useState(query.get("timeStr") || "");
@@ -20,6 +21,7 @@ function EditTodo() {
     const [dayStr, setDayStr] = useState(query.get("dayStr") || "");
     const [completed, setCompleted] = useState(query.get("completed") === 'true');
     const [priority, setPriority] = useState(query.get("priority") || "low");
+    console.log(uuid);
     const initialTimeChange = (event) => {
         if (!event || !event.target) {
             console.error("Event or event.target is undefined:", event);
@@ -82,13 +84,13 @@ function EditTodo() {
                     "Content-Type":"application/json"
                 },
                 body: JSON.stringify({
-                    user:user,
-                    title:originalTitle,
-                    newTitle:title, 
-                    priority:priority, 
-                    dueDate:dayStr, 
-                    dueTime:utcTime, 
-                    completed:completed
+                    user: user,
+                    uuid: uuid,
+                    newTitle: title, 
+                    priority: priority, 
+                    dueDate: dayStr, 
+                    dueTime: utcTime, 
+                    completed: completed
                 })
             });
             if(response.ok){
