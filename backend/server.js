@@ -163,6 +163,8 @@ app.post('/item', async (req, res) => {
         existingUser.todos.push(newTodo);
         await existingUser.save();
 
+        console.log(`All todos for user ${user}:`, existingUser.todos);
+
         res.status(200).json({ message: 'Todo item added successfully', uuid: newTodo.uuid });
     } catch (error) {
         console.error(error);
@@ -208,14 +210,11 @@ app.put('/item', async (req, res) => {
             return res.status(404).send('Todo item not found');
         }
 
-        // Update fields only if they are provided (i.e., not null or undefined)
         if (newTitle !== undefined && newTitle !== null) todo.title = newTitle;
         if (priority !== undefined && priority !== null) todo.priority = priority;
         if (dueDate !== undefined && dueDate !== null && dueDate !== '') todo.dueDate = dueDate;
         if (dueTime !== undefined && dueTime !== null && dueTime !== '') todo.dueTime = dueTime;
-        if (completed !== undefined && completed !== null) todo.completed = completed; // Corrected from `dueTime` to `completed`
-
-        console.log("Completed: " + completed);
+        if (completed !== undefined && completed !== null) todo.completed = completed;
 
         await existingUser.save();
 
@@ -225,6 +224,7 @@ app.put('/item', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
 
 
 

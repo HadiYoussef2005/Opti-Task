@@ -185,7 +185,7 @@ function Dashboard({ handleLogOut }) {
                                                     setTodos(prevTodos => ({
                                                         ...prevTodos,
                                                         [todo.priority]: prevTodos[todo.priority].map(item =>
-                                                            item.title === todo.title ? { ...item, completed: !todo.completed } : item
+                                                            item.uuid === todo.uuid ? { ...item, completed: !todo.completed } : item
                                                         )
                                                     }));
                                                 }}
@@ -197,7 +197,7 @@ function Dashboard({ handleLogOut }) {
 
                                                         setTodos(prevTodos => ({
                                                             ...prevTodos,
-                                                            [todo.priority]: prevTodos[todo.priority].filter(item => item.title !== todo.title)
+                                                            [todo.priority]: prevTodos[todo.priority].filter(item => item.uuid !== todo.uuid)
                                                         }));
                                                     } catch (error) {
                                                         console.error('Error deleting item:', error);
@@ -251,7 +251,7 @@ function Dashboard({ handleLogOut }) {
                                                     setTodos(prevTodos => ({
                                                         ...prevTodos,
                                                         [todo.priority]: prevTodos[todo.priority].map(item =>
-                                                            item.title === todo.title ? { ...item, completed: !todo.completed } : item
+                                                            item.uuid === todo.uuid ? { ...item, completed: !todo.completed } : item
                                                         )
                                                     }));
                                                 }}
@@ -262,7 +262,7 @@ function Dashboard({ handleLogOut }) {
                                                         await handleDelete(user, todo.uuid);
                                                         setTodos(prevTodos => ({
                                                             ...prevTodos,
-                                                            [todo.priority]: prevTodos[todo.priority].filter(item => item.title !== todo.title)
+                                                            [todo.priority]: prevTodos[todo.priority].filter(item => item.uuid !== todo.uuid)
                                                         }));
                                                     } catch (error) {
                                                         console.error('Error deleting item:', error);
@@ -316,7 +316,7 @@ function Dashboard({ handleLogOut }) {
                                                     setTodos(prevTodos => ({
                                                         ...prevTodos,
                                                         [todo.priority]: prevTodos[todo.priority].map(item =>
-                                                            item.title === todo.title ? { ...item, completed: !todo.completed } : item
+                                                            item.uuid === todo.uuid ? { ...item, completed: !todo.completed } : item
                                                         )
                                                     }));
                                                 }}
@@ -327,7 +327,7 @@ function Dashboard({ handleLogOut }) {
                                                         await handleDelete(user, todo.uuid);
                                                         setTodos(prevTodos => ({
                                                             ...prevTodos,
-                                                            [todo.priority]: prevTodos[todo.priority].filter(item => item.title !== todo.title)
+                                                            [todo.priority]: prevTodos[todo.priority].filter(item => item.uuid !== todo.uuid)
                                                         }));
                                                     } catch (error) {
                                                         console.error('Error deleting item:', error);
