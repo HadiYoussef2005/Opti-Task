@@ -59,8 +59,8 @@ function Dashboard({ handleLogOut }) {
         return { dayStr, timeStr, overdue, today, tomorrow, timeLeft, other };
     };
 
-    function handleEdit(uuid, title, date, time, priority, completed) {
-        const url = `/edittodo?uuid=${encodeURIComponent(uuid)}&title=${encodeURIComponent(title)}&dayStr=${encodeURIComponent(date)}&timeStr=${encodeURIComponent(time)}&priority=${encodeURIComponent(priority)}&completed=${encodeURIComponent(completed.toString())}`;
+    function handleEdit(uuid, title, date, time, priority, completed, hours) {
+        const url = `/edittodo?uuid=${encodeURIComponent(uuid)}&title=${encodeURIComponent(title)}&dayStr=${encodeURIComponent(date)}&timeStr=${encodeURIComponent(time)}&priority=${encodeURIComponent(priority)}&completed=${encodeURIComponent(completed.toString())}&hours=${encodeURIComponent(hours)}`;
         navigate(url);
     }
 
@@ -207,7 +207,7 @@ function Dashboard({ handleLogOut }) {
                                             >
                                                 <i className="fas fa-trash"></i>
                                             </button>
-                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed) }}>
+                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed, todo.hours) }}>
                                                 &#x22EE;
                                             </button>
                                         </div>
@@ -272,7 +272,7 @@ function Dashboard({ handleLogOut }) {
                                             >
                                                 <i className="fas fa-trash"></i>
                                             </button>
-                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed) }}>
+                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed, todo.hours) }}>
                                                 &#x22EE;
                                             </button>
                                         </div>
@@ -337,7 +337,7 @@ function Dashboard({ handleLogOut }) {
                                             >
                                                 <i className="fas fa-trash"></i>
                                             </button>
-                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed) }}>
+                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed, todo.hours) }}>
                                                 &#x22EE;
                                             </button>
                                         </div>

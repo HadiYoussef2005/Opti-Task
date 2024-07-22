@@ -21,7 +21,17 @@ function EditTodo() {
     const [dayStr, setDayStr] = useState(query.get("dayStr") || "");
     const [completed, setCompleted] = useState(query.get("completed") === 'true');
     const [priority, setPriority] = useState(query.get("priority") || "low");
-    console.log(uuid);
+    const [hoursNeeded, setHoursNeeded] = useState(query.get("hours") || 0);
+    function handleHoursNeeded(value) {
+        const regex = /^\d*\.?\d*$/;
+        
+        if (regex.test(value)) {
+            setHoursNeeded(value);
+        } else {
+            return;
+        }
+    
+    }
     const initialTimeChange = (event) => {
         if (!event || !event.target) {
             console.error("Event or event.target is undefined:", event);
@@ -77,6 +87,11 @@ function EditTodo() {
     };
 
     const handleSubmit = async () => {
+        if (isNaN(parseFloat(hoursNeeded)) || !isFinite(hoursNeeded)) {
+            setError(true);
+            setErrorMessage("Hours Required Must be a Number");
+            return;
+        }
         try{
             const response = await fetch('http://localhost:3000/item', {
                 method: "PUT",
@@ -90,7 +105,8 @@ function EditTodo() {
                     priority: priority, 
                     dueDate: dayStr, 
                     dueTime: utcTime, 
-                    completed: completed
+                    completed: completed,
+                    hours: hoursNeeded
                 })
             });
             if(response.ok){
@@ -177,6 +193,18 @@ function EditTodo() {
                             />
                         </div>
                     </div>
+                    <div className="form-group">
+                            <div className="time-container">
+                                <h3 className="time-container-item">Hours required before due date</h3>
+                                <input
+                                    type="text"
+                                    className="number-of-hours"
+                                    id="hours"
+                                    value={hoursNeeded}
+                                    onChange={(e) => handleHoursNeeded(e.target.value)}
+                                />
+                            </div>
+                        </div>
                     <div className="buttons">
                         <button className="btn btn-primary" onClick={handleSubmit}>Submit</button>
                         <button className="btn btn-primary" onClick={handleDashboard}>Dashboard</button>

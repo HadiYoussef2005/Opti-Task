@@ -441,3 +441,7 @@ body {
   background-color: rgb(167, 167, 167);
   cursor: pointer;
 }
+
+.number-of-hours{
+  max-width: 30px;
+}

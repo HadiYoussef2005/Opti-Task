@@ -145,7 +145,7 @@ app.delete('/deleteUser', isAuthenticated, async (req, res) => {
 });
 
 app.post('/item', async (req, res) => {
-    const { user, title, priority, dueDate, dueTime } = req.body;
+    const { user, title, priority, dueDate, dueTime, hours } = req.body;
     try {
         const existingUser = await User.findOne({ username: user });
         if (!existingUser) {
@@ -157,7 +157,8 @@ app.post('/item', async (req, res) => {
             title,
             priority: priority || 'medium',
             dueDate,
-            dueTime
+            dueTime,
+            hours
         };
 
         existingUser.todos.push(newTodo);
@@ -198,7 +199,7 @@ app.delete('/item', async (req, res) => {
 
 
 app.put('/item', async (req, res) => {
-    const { uuid, user, newTitle, priority, dueDate, dueTime, completed } = req.body;
+    const { uuid, user, newTitle, priority, dueDate, dueTime, completed, hours } = req.body;
     try {
         const existingUser = await User.findOne({ username: user });
         if (!existingUser) {
@@ -215,6 +216,7 @@ app.put('/item', async (req, res) => {
         if (dueDate !== undefined && dueDate !== null && dueDate !== '') todo.dueDate = dueDate;
         if (dueTime !== undefined && dueTime !== null && dueTime !== '') todo.dueTime = dueTime;
         if (completed !== undefined && completed !== null) todo.completed = completed;
+        if (hours !== undefined && hours !== null && hours !== '') todo.hours = hours;
 
         await existingUser.save();
 
@@ -256,7 +258,7 @@ app.get('/items', async (req, res) => {
                 const dueDate = groupedTodos[currentPriority[counter]][i].dueDate;
                 const dueTime = groupedTodos[currentPriority[counter]][i].dueTime;
                 const completed = groupedTodos[currentPriority[counter]][i].completed;
-
+                const hours = groupedTodos[currentPriority[counter]][i].hours;
                 const dateParts = dueDate.split('-');
                 const year = parseInt(dateParts[0], 10);
                 const month = parseInt(dateParts[1], 10) - 1;
@@ -277,7 +279,8 @@ app.get('/items', async (req, res) => {
                     priority,
                     title,
                     dateTime,
-                    completed
+                    completed,
+                    hours
                 });
             }
         });
@@ -302,7 +305,8 @@ app.get('/items', async (req, res) => {
                 title: item.title,
                 priority: item.priority,
                 dueDate: item.dateTime,
-                completed: item.completed
+                completed: item.completed,
+                hours: item.hours
             });
         });
 

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid'); // Import the uuid library
+const { v4: uuidv4 } = require('uuid'); 
 const Schema = mongoose.Schema;
 
 const todoSchema = new Schema({
@@ -8,7 +8,8 @@ const todoSchema = new Schema({
     completed: { type: Boolean, default: false },
     dueDate: { type: String },
     dueTime: { type: String },
-    priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' }
+    priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
+    hours: {type: Number}
 });
 
 const userSchema = new Schema({

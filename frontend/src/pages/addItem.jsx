@@ -13,6 +13,19 @@ function AddItem() {
     const [priority, setPriority] = useState('low');
     const [dueTime, setDueTime] = useState('');
     const [utcTime, setUtcTime] = useState('');
+    const [hoursNeeded, setHoursNeeded] = useState('');
+    console.log(hoursNeeded);
+    
+    function handleHoursNeeded(value) {
+        const regex = /^\d*\.?\d*$/;
+        
+        if (regex.test(value)) {
+            setHoursNeeded(value);
+        } else {
+            return;
+        }
+    
+    }
 
     const initialTimeChange = (event) => {
         if (!event || !event.target) {
@@ -69,12 +82,25 @@ function AddItem() {
         setPriority(e.target.value);
     };
 
+    function convertToNumber(value) {
+        value = value.trim();
+        const number = parseFloat(value);
+        return isFinite(number) ? number : NaN;
+    }
+    
+
     const handleSubmit = async () => {
-        if (!title || !dueTime || !dueDate) {
+        if (!title || !dueTime || !dueDate || !hoursNeeded) {
             setError(true);
             setErrorMessage("All fields must be filled");
             return;
+        } else if (isNaN(parseFloat(hoursNeeded)) || !isFinite(hoursNeeded)) {
+            setError(true);
+            setErrorMessage("Hours Required Must be a Number");
+            return;
         }
+
+        setHoursNeeded(convertToNumber(hoursNeeded));
 
         try {
             const response = await fetch("http://localhost:3000/item", {
@@ -88,6 +114,7 @@ function AddItem() {
                     dueTime: utcTime,
                     priority: priority,
                     dueDate: dueDate,
+                    hours: hoursNeeded
                 }),
                 credentials: 'include'
             });
@@ -167,6 +194,18 @@ function AddItem() {
                                     id="dueTime"
                                     value={dueTime}
                                     onChange={(e) => initialTimeChange(e)}
+                                />
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <div className="time-container">
+                                <h3 className="time-container-item">Hours required before due date</h3>
+                                <input
+                                    type="text"
+                                    className="number-of-hours"
+                                    id="hours"
+                                    value={hoursNeeded}
+                                    onChange={(e) => handleHoursNeeded(e.target.value)}
                                 />
                             </div>
                         </div>
