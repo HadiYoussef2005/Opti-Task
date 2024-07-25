@@ -85,6 +85,18 @@ body {
   font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
+.editCard {
+  width: 30%;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  padding-right: 40px;
+  margin-top: 20px;
+  color: gray;
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
 .card-body {
   padding: 20px;
 }
@@ -444,4 +456,11 @@ body {
 
 .number-of-hours{
   max-width: 30px;
+}
+
+.center-button{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }

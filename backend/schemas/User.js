@@ -9,7 +9,8 @@ const todoSchema = new Schema({
     dueDate: { type: String },
     dueTime: { type: String },
     priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
-    hours: {type: Number}
+    hours: {type: Number},
+    eventLength: {type: Number}
 });
 
 const userSchema = new Schema({

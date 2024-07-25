@@ -14,6 +14,7 @@ function AddItem() {
     const [dueTime, setDueTime] = useState('');
     const [utcTime, setUtcTime] = useState('');
     const [hoursNeeded, setHoursNeeded] = useState('');
+    const [eventLength, setEventLength] = useState('');
     console.log(hoursNeeded);
     
     function handleHoursNeeded(value) {
@@ -26,7 +27,15 @@ function AddItem() {
         }
     
     }
-
+    function handleEventLength(value){
+        const regex = /^\d*\.?\d*$/;
+        
+        if (regex.test(value)) {
+            setEventLength(value);
+        } else {
+            return;
+        }
+    }
     const initialTimeChange = (event) => {
         if (!event || !event.target) {
             console.error("Event or event.target is undefined:", event);
@@ -114,7 +123,8 @@ function AddItem() {
                     dueTime: utcTime,
                     priority: priority,
                     dueDate: dueDate,
-                    hours: hoursNeeded
+                    hours: hoursNeeded,
+                    eventLength: eventLength
                 }),
                 credentials: 'include'
             });
@@ -206,6 +216,18 @@ function AddItem() {
                                     id="hours"
                                     value={hoursNeeded}
                                     onChange={(e) => handleHoursNeeded(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <div className="time-container">
+                                <h3 className="time-container-item">Event Length</h3>
+                                <input
+                                    type="text"
+                                    className="number-of-hours"
+                                    id="hours"
+                                    value={eventLength}
+                                    onChange={(e) => handleEventLength(e.target.value)}
                                 />
                             </div>
                         </div>

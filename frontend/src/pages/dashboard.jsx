@@ -9,6 +9,23 @@ function Dashboard({ handleLogOut }) {
     const { user, loggedIn } = useContext(UserContext);
     const [todos, setTodos] = useState({ high: [], medium: [], low: [] });
 
+    const handleCalendar = async () => {
+        try{
+            const response = await fetch('http://localhost:3000/make-my-calendar', {
+                method: "GET",
+                headers: {
+                    "Content-Type":"application/json"
+                },
+                credentials:"include"
+            })
+            if (response.ok){
+                console.log(response);
+            }
+        } catch (error) { 
+            console.error(error);
+        }
+    }
+
     const filterDate = (dueDate) => {
         console.log(dueDate);
         if (!dueDate || typeof dueDate !== 'string') {
@@ -51,16 +68,23 @@ function Dashboard({ handleLogOut }) {
         const today = isToday && !isOverdue;
         const tomorrow = isTomorrow && !isOverdue;
 
-        const timeDiff = dueDateTime.getTime() - now.getTime();
-        const timeLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        const start = new Date(dueDateTime);
+        const end = new Date(now);
+
+        start.setHours(0,0,0,0);
+        end.setHours(0,0,0,0);
+
+        const timeDiff = start-end;
+        const millisecondsInDay = 1000 * 60 * 60 * 24;
+        const timeLeft = Math.floor(timeDiff / millisecondsInDay);
 
         const other = !today && !tomorrow && !overdue;
 
         return { dayStr, timeStr, overdue, today, tomorrow, timeLeft, other };
     };
 
-    function handleEdit(uuid, title, date, time, priority, completed, hours) {
-        const url = `/edittodo?uuid=${encodeURIComponent(uuid)}&title=${encodeURIComponent(title)}&dayStr=${encodeURIComponent(date)}&timeStr=${encodeURIComponent(time)}&priority=${encodeURIComponent(priority)}&completed=${encodeURIComponent(completed.toString())}&hours=${encodeURIComponent(hours)}`;
+    function handleEdit(uuid, title, date, time, priority, completed, hours, todoLength) {
+        const url = `/edittodo?uuid=${encodeURIComponent(uuid)}&title=${encodeURIComponent(title)}&dayStr=${encodeURIComponent(date)}&timeStr=${encodeURIComponent(time)}&priority=${encodeURIComponent(priority)}&completed=${encodeURIComponent(completed.toString())}&hours=${encodeURIComponent(hours)}&length=${encodeURIComponent(todoLength)}`;
         navigate(url);
     }
 
@@ -207,7 +231,7 @@ function Dashboard({ handleLogOut }) {
                                             >
                                                 <i className="fas fa-trash"></i>
                                             </button>
-                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed, todo.hours) }}>
+                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed, todo.hours, todo.eventLength) }}>
                                                 &#x22EE;
                                             </button>
                                         </div>
@@ -272,7 +296,7 @@ function Dashboard({ handleLogOut }) {
                                             >
                                                 <i className="fas fa-trash"></i>
                                             </button>
-                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed, todo.hours) }}>
+                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed, todo.hours, todo.eventLength) }}>
                                                 &#x22EE;
                                             </button>
                                         </div>
@@ -337,7 +361,7 @@ function Dashboard({ handleLogOut }) {
                                             >
                                                 <i className="fas fa-trash"></i>
                                             </button>
-                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed, todo.hours) }}>
+                                            <button className="menu-button" onClick={() => { handleEdit(todo.uuid, todo.title, filterDate(todo.dueDate).dayStr, filterDate(todo.dueDate).timeStr, todo.priority, todo.completed, todo.hours, todo.eventLength) }}>
                                                 &#x22EE;
                                             </button>
                                         </div>
@@ -345,6 +369,9 @@ function Dashboard({ handleLogOut }) {
                                 ))}
                             </div>
                         </div>
+                    </div>
+                    <div className="center-button">
+                        <button className="btn" onClick={handleCalendar}>Make my calendar</button>
                     </div>
                 </div>
             </>

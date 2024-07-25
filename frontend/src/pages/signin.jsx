@@ -13,6 +13,10 @@ function SignIn({ handleLogOut }) {
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
+    const handleGoogleLogin = () => {
+        window.location.href = 'http://localhost:3000/auth/google'; 
+    };
+
     function handleBackHome() {
         navigate('/');
     }
@@ -23,44 +27,45 @@ function SignIn({ handleLogOut }) {
     
     async function handleLogin(username, password) {
         if (!password || !username) {
-          setError(true);
-          setErrorMessage(`All fields must be filled`);
+            setError(true);
+            setErrorMessage(`All fields must be filled`);
         } else {
-          try {
-            const response = await fetch('http://localhost:3000/login', {
-              method: "POST",
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                username: username,
-                password: password
-              }),
-              credentials: 'include'
-            });
-            const data = await response.json();
-            if (response.ok) {
-              if (data.message === `Login Successful`) {
-                console.log(data.message);
-                setLoggedIn(true);
-                setUser(username);
-                navigate('/dashboard', { replace: true }); 
-              } else {
+            try {
+                const response = await fetch('http://localhost:3000/login', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                }),
+                credentials: 'include'
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    if (data.message === `Login Successful`) {
+                        console.log(data.message);
+                        setLoggedIn(true);
+                        setUser(username);
+                        handleGoogleLogin();
+                        navigate('/dashboard', { replace: true }); 
+                    } else {
+                        setError(true);
+                        setErrorMessage(data.message);
+                    }
+                } else {
                 setError(true);
                 setErrorMessage(data.message);
-              }
-            } else {
-              setError(true);
-              setErrorMessage(data.message);
+                }
+            } catch (error) {
+                setError(true);
+                setErrorMessage(`An error occurred. Please try again.`);
             }
-          } catch (error) {
-            setError(true);
-            setErrorMessage(`An error occurred. Please try again.`);
-          }
         }
-      }
+    }
 
-      async function handleRegister(username, password, confirm) {
+    async function handleRegister(username, password, confirm) {
         if (password !== confirm) {
             setError(true);
             setErrorMessage(`Passwords must match`);

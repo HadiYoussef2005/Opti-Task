@@ -22,6 +22,7 @@ function EditTodo() {
     const [completed, setCompleted] = useState(query.get("completed") === 'true');
     const [priority, setPriority] = useState(query.get("priority") || "low");
     const [hoursNeeded, setHoursNeeded] = useState(query.get("hours") || 0);
+    const [eventLength, setEventLength] = useState(query.get("length") || 0);
     function handleHoursNeeded(value) {
         const regex = /^\d*\.?\d*$/;
         
@@ -31,6 +32,14 @@ function EditTodo() {
             return;
         }
     
+    }
+    function handleEventLength(value) { 
+        const regex = /^\d*\.?\d*$/;
+        if (regex.test(value)) {
+            setEventLength(value);
+        } else {
+            return;
+        }
     }
     const initialTimeChange = (event) => {
         if (!event || !event.target) {
@@ -106,7 +115,8 @@ function EditTodo() {
                     dueDate: dayStr, 
                     dueTime: utcTime, 
                     completed: completed,
-                    hours: hoursNeeded
+                    hours: hoursNeeded,
+                    eventLength: eventLength
                 })
             });
             if(response.ok){
@@ -143,7 +153,7 @@ function EditTodo() {
 
     return loggedIn ? (
         <div className="signin">
-            <div className="card">
+            <div className="editCard">
                 <div className="card-body">
                     <h1 className="card-title">Enter your item details</h1>
                     <div className="form-group">
@@ -194,17 +204,29 @@ function EditTodo() {
                         </div>
                     </div>
                     <div className="form-group">
-                            <div className="time-container">
-                                <h3 className="time-container-item">Hours required before due date</h3>
-                                <input
-                                    type="text"
-                                    className="number-of-hours"
-                                    id="hours"
-                                    value={hoursNeeded}
-                                    onChange={(e) => handleHoursNeeded(e.target.value)}
-                                />
-                            </div>
+                        <div className="time-container">
+                            <h3 className="time-container-item">Hours required before due date</h3>
+                            <input
+                                type="text"
+                                className="number-of-hours"
+                                id="hours"
+                                value={hoursNeeded}
+                                onChange={(e) => handleHoursNeeded(e.target.value)}
+                            />
                         </div>
+                    </div>
+                    <div className="form-group">
+                        <div className="time-container">
+                            <h3 className="time-container-item">Event Length</h3>
+                            <input
+                                type="text"
+                                className="number-of-hours"
+                                id="hours"
+                                value={eventLength}
+                                onChange={(e) => handleEventLength(e.target.value)}
+                            />
+                        </div>
+                    </div>
                     <div className="buttons">
                         <button className="btn btn-primary" onClick={handleSubmit}>Submit</button>
                         <button className="btn btn-primary" onClick={handleDashboard}>Dashboard</button>
