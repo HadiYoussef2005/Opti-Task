@@ -120,7 +120,7 @@ function AddItem() {
                 body: JSON.stringify({
                     user: user,
                     title: title,
-                    dueTime: utcTime,
+                    dueTime: dueTime,
                     priority: priority,
                     dueDate: dueDate,
                     hours: hoursNeeded,

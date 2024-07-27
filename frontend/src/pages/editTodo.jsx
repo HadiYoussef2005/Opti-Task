@@ -113,7 +113,7 @@ function EditTodo() {
                     newTitle: title, 
                     priority: priority, 
                     dueDate: dayStr, 
-                    dueTime: utcTime, 
+                    dueTime: timeStr, 
                     completed: completed,
                     hours: hoursNeeded,
                     eventLength: eventLength

@@ -14,6 +14,7 @@ const {google} = require('googleapis');
 const cookieSession = require('cookie-session');
 const crypto = require('crypto');
 const moment = require('moment-timezone');
+const calendar = google.calendar('v3');
 
 const generateSecureKey = () => crypto.randomBytes(32).toString('hex');
 
@@ -74,14 +75,16 @@ app.get('/redirect', (req, res) => {
         return res.status(400).send('Authorization code is missing');
     }
 
-    oauth2Client.getToken(code, (err, tokensResult) => {
+    oauth2Client.getToken(code, (err, tokens) => {
         if (err) {
             console.error("Couldn't get token", err);
             return res.status(500).send(`Error retrieving tokens: ${err.message}`);
         }
-        req.session.tokens = tokensResult; 
-        oauth2Client.setCredentials(tokensResult);
-        res.send('Successfully logged in');
+        req.session.tokens = tokens;
+        oauth2Client.setCredentials(tokens);
+        
+        // Redirect to the frontend dashboard
+        res.redirect('http://localhost:5173/dashboard');
     });
 });
 
@@ -106,40 +109,14 @@ app.get('/oauth2callback', async (req, res) => {
     }
 });
 
-async function createGoogleCalendarEvent(eventData) {
-    try {
-        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-
-        // Combine due date and time
-        const startDateTimeUTC = combineDueDateAndTime(eventData.dueDate, eventData.dueTime);
-
-        // Subtract 4 hours from UTC time
-        const startDateTime = moment.utc(startDateTimeUTC).subtract(4, 'hours').format();
-        const endDateTime = moment(startDateTime).add(eventData.eventLength, 'hours').format();
-
-        const event = {
-            summary: eventData.title,
-            start: {
-                dateTime: startDateTime,
-                timeZone: 'UTC', // Still in UTC after subtraction
-            },
-            end: {
-                dateTime: endDateTime,
-                timeZone: 'UTC', // Still in UTC after subtraction
-            },
-            description: "",
-        };
-
-        const response = await calendar.events.insert({
-            calendarId: 'primary',
-            resource: event,
-        });
-
-        return response.data;
-    } catch (error) {
-        console.error('Error creating event:', error);
-        throw error;
-    }
+async function createGoogleCalendarEvent(event, auth) {
+    let thisCalendar = google.calendar({ version: 'v3', auth });
+    const newEvent = await thisCalendar.events.insert({
+        auth: auth,
+        calendarId: 'primary',
+        resource: event,
+    });
+    return newEvent.data;
 }
 
 
@@ -414,6 +391,23 @@ app.get('/items', async (req, res) => {
     }
 });
 
+async function listGoogleCalendarEvents(auth) {
+    let thisCalendar = google.calendar({ version: 'v3', auth });
+    const now = new Date();
+    const timeMin = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const timeMax = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
+    
+    const res = await thisCalendar.events.list({
+        calendarId: 'primary',
+        timeMin: timeMin,
+        timeMax: timeMax,
+        maxResults: 10,
+        singleEvents: true,
+        orderBy: 'startTime'
+    });
+    return res.data.items;
+}
+
 app.get('/make-my-calendar', isAuthenticated, async (req, res) => {
     try {
         const user = req.session.user;
@@ -427,26 +421,32 @@ app.get('/make-my-calendar', isAuthenticated, async (req, res) => {
         }
 
         const allTodos = existingUser.todos;
-        storedParsedTodos = parser_function(allTodos);
-        const todoId = "f0975328-a518-4224-86b6-d8ca999c119c"
-        const todoItem = allTodos.find(todo => todo.uuid === todoId);
-        oauth2Client.setCredentials(req.session.tokens);
+        processTodos(allTodos, req, oauth2Client)      
 
-        const title = todoItem.title;
-        const dueDate = todoItem.dueDate;
-        const dueTime = todoItem.dueTime;
-        const eventLength = todoItem.eventLength;
+        // const title = todoItem.title;
+        // const dueDate = todoItem.dueDate;
+        // const dueTime = todoItem.dueTime;
+        // console.log(dueTime)
+        // const eventLength = todoItem.eventLength;
 
-        const event = {
-            title,
-            dueDate,
-            dueTime,
-            eventLength            
-        }
+        // const startDateTime = moment(`${dueDate}T${dueTime}`).format();
+        // const endDateTime = moment(startDateTime).add(eventLength, 'hours').format();
 
-        const calendarEvent = await createGoogleCalendarEvent(event);
-        console.log(calendarEvent)
-        res.status(200).json({ message: 'Event created successfully', calendarEvent });
+        // const event = {
+        //     summary: title,
+        //     start: {
+        //         dateTime: startDateTime,
+        //         timeZone: 'America/New_York', // Use the appropriate time zone
+        //     },
+        //     end: {
+        //         dateTime: endDateTime,
+        //         timeZone: 'America/New_York', // Use the appropriate time zone
+        //     },
+        // };
+
+        // const calendarEvent = await createGoogleCalendarEvent(event, oauth2Client);
+        // console.log('Newly created event:', calendarEvent);
+        res.status(200).json({ message: 'Event created successfully'});
 
     } catch (error) {
         console.error('Error parsing todos:', error);
@@ -454,10 +454,41 @@ app.get('/make-my-calendar', isAuthenticated, async (req, res) => {
     }
 });
 
-function parser_function(todos) {
-    console.log(todos);
-}
+const processTodos = async (todos, req, oauth2Client) => {
+    try {
+        // Set credentials once before processing todos
+        oauth2Client.setCredentials(req.session.tokens);
 
+        // Fetch current events once
+        const currentEvents = await listGoogleCalendarEvents(oauth2Client);
+        console.log('Current events:', JSON.stringify(currentEvents));
+
+        for(const todo of todos){
+            let uuid = todo.uuid;
+            let title = todo.title;
+            let completed = todo.completed;
+            let dueDate = todo.dueDate;
+            let dueTime = todo.dueTime;
+            let priority = todo.priority;
+            let prep = todo.hours;
+            let eventLength = todo.eventLength;
+            console.log(`UUID: ${uuid}`);
+            console.log(`Title: ${title}`);
+            console.log(`Completed: ${completed}`);
+            console.log(`Due Date: ${dueDate}`);
+            console.log(`Due Time: ${dueTime}`);
+            console.log(`Priority: ${priority}`);
+            console.log(`Prep: ${prep}`);
+            console.log(`Event Length: ${eventLength}`);
+            console.log('-------------------');
+
+            // Here you can add logic to create or update events based on todos
+        }
+    } catch (error) {
+        console.error('Error processing todos:', error);
+        throw error;  // Re-throw the error to be caught in the main route handler
+    }
+};
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

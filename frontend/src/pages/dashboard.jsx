@@ -35,7 +35,7 @@ function Dashboard({ handleLogOut }) {
         console.log("Due date: ", dueDate);
         const now = new Date();
         const dueDateTime = new Date(dueDate);
-        dueDateTime.setHours(dueDateTime.getHours() - 4 < 0 ? 24 - (4 - dueDateTime.getHours()) : dueDateTime.getHours() - 4);
+        dueDateTime.setHours(dueDateTime.getHours());
         console.log("Original", dueDateTime);
 
         const year = dueDateTime.getFullYear();
@@ -49,10 +49,13 @@ function Dashboard({ handleLogOut }) {
         let flag = true;
         let amOrPm = "AM";
 
-        if (localHour > 12) {
-            localHour -= 12;
+        if (localHour >= 12) {
+            if (localHour > 12){
+                localHour -= 12;
+            }
             amOrPm = "PM"
-        } else if (localHour === 0) {
+        } 
+            else if (localHour === 0) {
             localHour = 12;
         }
 
