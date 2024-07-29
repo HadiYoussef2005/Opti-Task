@@ -191,13 +191,13 @@ function Dashboard({ handleLogOut }) {
                                                 <span>Completed</span>
                                             )}
                                             {(filterDate(todo.dueDate).today && !filterDate(todo.dueDate).overdue && !todo.completed) && (
-                                                <span>Due today at {filterDate(todo.dueDate).timeStr}</span>
+                                                <span>Today at {filterDate(todo.dueDate).timeStr}</span>
                                             )}
                                             {filterDate(todo.dueDate).tomorrow && !todo.completed && (
-                                                <span>Due tomorrow at {filterDate(todo.dueDate).timeStr}</span>
+                                                <span>Tomorrow at {filterDate(todo.dueDate).timeStr}</span>
                                             )}
                                             {filterDate(todo.dueDate).other && !todo.completed && (
-                                                <span>Due in {filterDate(todo.dueDate).timeLeft} days at {filterDate(todo.dueDate).timeStr}</span>
+                                                <span>In {filterDate(todo.dueDate).timeLeft} days at {filterDate(todo.dueDate).timeStr}</span>
                                             )}
                                             {(filterDate(todo.dueDate).overdue && !todo.completed) && (
                                                 <span>Overdue</span>
@@ -257,13 +257,13 @@ function Dashboard({ handleLogOut }) {
                                                 <span>Completed</span>
                                             )}
                                             {(filterDate(todo.dueDate).today && !filterDate(todo.dueDate).overdue && !todo.completed) && (
-                                                <span>Due today at {filterDate(todo.dueDate).timeStr}</span>
+                                                <span>Today at {filterDate(todo.dueDate).timeStr}</span>
                                             )}
                                             {filterDate(todo.dueDate).tomorrow && !todo.completed && (
-                                                <span>Due tomorrow at {filterDate(todo.dueDate).timeStr}</span>
+                                                <span>Tomorrow at {filterDate(todo.dueDate).timeStr}</span>
                                             )}
                                             {filterDate(todo.dueDate).other && !todo.completed && (
-                                                <span>Due in {filterDate(todo.dueDate).timeLeft} days at {filterDate(todo.dueDate).timeStr}</span>
+                                                <span>In {filterDate(todo.dueDate).timeLeft} days at {filterDate(todo.dueDate).timeStr}</span>
                                             )}
                                             {(filterDate(todo.dueDate).overdue && !todo.completed) && (
                                                 <span>Overdue</span>
@@ -322,13 +322,13 @@ function Dashboard({ handleLogOut }) {
                                                 <span>Completed</span>
                                             )}
                                             {(filterDate(todo.dueDate).today && !filterDate(todo.dueDate).overdue && !todo.completed) && (
-                                                <span>Due today at {filterDate(todo.dueDate).timeStr}</span>
+                                                <span>Today at {filterDate(todo.dueDate).timeStr}</span>
                                             )}
                                             {filterDate(todo.dueDate).tomorrow && !todo.completed && (
-                                                <span>Due tomorrow at {filterDate(todo.dueDate).timeStr}</span>
+                                                <span>Tomorrow at {filterDate(todo.dueDate).timeStr}</span>
                                             )}
                                             {filterDate(todo.dueDate).other && !todo.completed && (
-                                                <span>Due in {filterDate(todo.dueDate).timeLeft} days at {filterDate(todo.dueDate).timeStr}</span>
+                                                <span>In {filterDate(todo.dueDate).timeLeft} days at {filterDate(todo.dueDate).timeStr}</span>
                                             )}
                                             {(filterDate(todo.dueDate).overdue && !todo.completed) && (
                                                 <span>Overdue</span>
@@ -374,7 +374,7 @@ function Dashboard({ handleLogOut }) {
                         </div>
                     </div>
                     <div className="center-button">
-                        <button className="btn" onClick={handleCalendar}>Make my calendar</button>
+                        <button className="btn" onClick={handleCalendar}>Add to calendar</button>
                     </div>
                 </div>
             </>

@@ -15,7 +15,7 @@ function Home() {
     return (
         <div className="home">
             <div className="home-item">
-                <div className="title">This is a Todo List App</div>
+                <div className="title">Welcome to Opti-Task</div>
             </div>
             <div className="home-item">
                 <h4 className="header">Please register/login below</h4>

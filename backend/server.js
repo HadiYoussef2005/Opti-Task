@@ -456,37 +456,57 @@ app.get('/make-my-calendar', isAuthenticated, async (req, res) => {
 
 const processTodos = async (todos, req, oauth2Client) => {
     try {
-        // Set credentials once before processing todos
         oauth2Client.setCredentials(req.session.tokens);
 
-        // Fetch current events once
-        const currentEvents = await listGoogleCalendarEvents(oauth2Client);
-        console.log('Current events:', JSON.stringify(currentEvents));
-
-        for(const todo of todos){
-            let uuid = todo.uuid;
-            let title = todo.title;
-            let completed = todo.completed;
-            let dueDate = todo.dueDate;
-            let dueTime = todo.dueTime;
-            let priority = todo.priority;
-            let prep = todo.hours;
-            let eventLength = todo.eventLength;
+        for(const todo of todos){            
+            let { uuid, title, completed, dueDate, dueTime, priority, eventLength } = todo;
+            
             console.log(`UUID: ${uuid}`);
             console.log(`Title: ${title}`);
             console.log(`Completed: ${completed}`);
             console.log(`Due Date: ${dueDate}`);
             console.log(`Due Time: ${dueTime}`);
             console.log(`Priority: ${priority}`);
-            console.log(`Prep: ${prep}`);
             console.log(`Event Length: ${eventLength}`);
             console.log('-------------------');
-
-            // Here you can add logic to create or update events based on todos
-        }
-    } catch (error) {
-        console.error('Error processing todos:', error);
-        throw error;  // Re-throw the error to be caught in the main route handler
+            if(completed){
+                continue;
+            } else {
+                if (parseInt(eventLength) === 0) {
+                    let new_event = {
+                        summary: title,
+                        start: {
+                            date: dueDate,
+                            timeZone: 'America/New_York',
+                        },
+                        end: {
+                            date: moment(dueDate).add(1, 'days').format('YYYY-MM-DD'),
+                            timeZone: 'America/New_York',
+                        },
+                    };
+                    const calendarEvent = await createGoogleCalendarEvent(new_event, oauth2Client);
+                    console.log('Newly created event:', calendarEvent);
+                } else {
+                    const startTime = moment(`${dueDate}T${dueTime}`).toISOString();
+                    const endTime = moment(startTime).add(parseInt(eventLength), 'hours').toISOString();
+                    let new_event = {
+                        summary: title,
+                        start: {
+                            dateTime: startTime,
+                            timeZone: 'America/New_York',
+                        },
+                        end: {
+                            dateTime: endTime,
+                            timeZone: 'America/New_York',
+                        },
+                    };
+                    const calendarEvent = await createGoogleCalendarEvent(new_event, oauth2Client);
+                    console.log('Newly created event:', calendarEvent);
+                }
+                
+                
+            }}} catch (error) {
+        console.error("Error calling generate_calendar:", error);
     }
 };
 
